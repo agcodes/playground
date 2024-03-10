@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toroidia</title>
+<style>
+    canvas {
+        border: 1px solid black;
+    }
+</style>
+</head>
+<body>
+<canvas id='toroidCanvas' width='600' height='600'></canvas>
+    <div id='controls'>
+      <ul>
+        <li>
+          <label for='minorBar'>Minor Radius:</label>
+          <input type='range' id='minorBar' value='75' min='1' max='150' />
+        </li>
+        <li>
+          <label for='majorBar'>Major Radius:</label>
+          <input type='range' id='majorBar' value='175' min='1' max='250' />
+        </li>
+        <li>
+          <label for='lengBar'>Length:</label>
+          <input type='range' id='lengBar' value='3073' min='1' max='5555' />
+        </li>
+        <li>
+          <label for='convBar'>Convergence per step:</label>
+          <input type='range' id='convBar' value='1000' min='0' max='10000' />
+        </li>
+        <li>
+          <label for='rollBar'>Roll per step:</label>
+          <input type='range' id='rollBar' value='500' min='0' max='10000' />
+        </li>
+        <li>
+          <label for='spinBar'>Spin per step:</label>
+          <input type='range' id='spinBar' value='5000' min='0' max='10000' />
+        </li>
+        <li>
+          <label for='convFBar'>Convergence per frame:</label>
+          <input type='range' id='convFBar' value='1500' min='0' max='10000' />
+        </li>
+        <li>
+          <label for='rollFBar'>Roll per frame:</label>
+          <input type='range' id='rollFBar' value='50' min='0' max='10000' />
+        </li>
+        <li>
+          <label for='spinFBar'>Spin per frame:</label>
+          <input type='range' id='spinFBar' value='5000' min='0' max='10000' />
+        </li>
+        <li>
+          <label for='reverseBox'>Reverse:</label>
+          <input type='checkbox' id='reverseBox' />
+        </li>
+      </ul>
+    </div>
+<script>
+    // Toroidia code translated to JavaScript using Canvas
+
+    // Define Canvas and context
+    const canvas = document.getElementById('toroidCanvas');
+    const ctx = canvas.getContext('2d');
+          ctx.lineWidth=3;
+    let major=0;
+    let minor=0;
+    // Define variables
+    let t=0, a=0, b=0,x=0,y=0, tF=0, aF=0, bF=0, s = 150, r = 1, spin = 0, roll = 0, conv = 100, spinF=0, rollF=0, convF=0,c=0;
+    let hue;
+    let count, idx, i, leng;
+    let drawer = 1, ox=0, oy=0,
+        xcentre = 300, ycentre = 300;
+    let f, realx, realy, d, step = 0.0001, symmetry = 1;
+    let direction = 1;
+    let sineArray = new Array(1025);
+    let colours = new Array(256);
+    let clearnow = true;
+
+    // Function to initialize sine array and colors
+    function init() {
+        for (i = 0; i < colours.length; i++) {
+            hue = (i * 0.0039) % 1;
+            colours[i] = `hsl(${hue * 360}, 100%, 50%)`;
+        }
+    }
+
+    // Initialization
+    init();
+    scrollUpdate();
+    boxUpdate();
+
+    // Function to handle scrollbar update
+    function scrollUpdate() {
+        major = parseFloat(majorBar.value);
+        minor =  parseFloat(minorBar.value);
+        leng =  parseFloat(lengBar.value);
+        console.log(convBar.value);
+        conv =  parseFloat(convBar.value) * 0.00001;
+        roll =  parseFloat(rollBar.value) * 0.00001;
+        spin =  parseFloat(spinBar.value) * 0.00001;
+        convF =  parseFloat(convFBar.value) * 0.00005;
+        rollF =  parseFloat(rollFBar.value) * 0.00005;
+        spinF =  parseFloat(spinFBar.value) * 0.00005;
+        
+    }
+
+    // Function to handle checkbox update
+    function boxUpdate() {
+    const drawTypeInput = document.querySelector('input[name="drawType"]:checked');
+    if (drawTypeInput) {
+        theBox = drawTypeInput.value;
+        if (theBox == "Lines") drawer = 0;
+        if (theBox == "Dots") drawer = 1;
+        if (theBox == "2x2 squares") drawer = 2;
+        if (theBox == "3x3 squares") drawer = 3;
+        if (theBox == "4x4 squares") drawer = 4;
+    }
+    const reverseBoxInput = document.getElementById('reverseBox');
+    if (reverseBoxInput) {
+        direction = reverseBoxInput.checked ? -1 : 1;
+    }
+}
+
+    // Function to draw
+    function draw(x, y, ox, oy, drawer) {
+        ctx.fillStyle = colours[1];
+        if (drawer == 0) {
+          ctx.beginPath(); 
+          ctx.lineWidth=80;
+          ctx.moveTo(x, y); 
+          ctx.lineTo(ox, oy); 
+          ctx.stroke();
+        }
+        else {
+          ctx.fillRect(x, y, drawer, drawer);
+        }
+    }
+
+    // Function to update state
+    function updateState() {
+        t = tF;
+        a = aF;
+        b = bF;
+        tF += convF * direction;
+        aF += rollF * direction;
+        bF += spinF * direction;
+    }
+
+    // Function to draw toroid
+    function drawToroid() {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        let lastX, lastY;
+        c=0;
+        
+        for (count = 0; count < leng; count++) {
+            t += conv;
+            a += roll;
+            b += spin;
+            c++;  
+            
+            x = xcentre + Math.cos(b) * (major + minor * Math.cos(t));
+            y = ycentre + Math.sin(b) * (major + minor * Math.cos(t)) * Math.sin(a) + Math.cos(a) * Math.sin(t) * minor;
+            
+            if (count !== 0) draw(x, y, lastX, lastY, drawer);
+            lastX = x;
+            lastY = y;
+        }
+    }
+
+    // Function to start animation
+    function startAnimation() {
+        function animationLoop() {
+            updateState();
+            drawToroid();
+            requestAnimationFrame(animationLoop);
+        }
+        animationLoop();
+    }
+
+    // Event listeners for scrollbars and checkboxes
+    document.querySelectorAll('input[type="range"]').forEach(elem => {
+        elem.addEventListener('input', scrollUpdate);
+    });
+
+    document.querySelectorAll('input[name="drawType"]').forEach(elem => {
+        elem.addEventListener('change', boxUpdate);
+    });
+
+    reverseBox.addEventListener('change', boxUpdate);
+
+    // Start animation
+    startAnimation();
+</script>
+</body>
+</html>
