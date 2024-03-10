@@ -6,7 +6,7 @@
 <title>Toroidia</title>
 <style>
     canvas {
-        border: 1px solid black;
+        border: 0;
     }
 </style>
 </head>
@@ -56,9 +56,20 @@
         </li>
       </ul>
     </div>
+    <div>
+      <p>
+        <a href="https://github.com/agcodes/playground/blob/main/toroid.html">source on github</a>
+      </p>
+      
+    </div>
 <script>
-    // Toroidia code translated to JavaScript using Canvas
-
+/* 
+    converted from java
+    Toroidia
+    Adventures in (super)toroidal geometry.
+	
+   This version © Fergus Crawshay Murray, February 2000.
+   Any comments or suggestions to toroids@fergusmurray.co.uk.  */
     // Define Canvas and context
     const canvas = document.getElementById('toroidCanvas');
     const ctx = canvas.getContext('2d');
@@ -69,19 +80,19 @@
     let t=0, a=0, b=0,x=0,y=0, tF=0, aF=0, bF=0, s = 150, r = 1, spin = 0, roll = 0, conv = 100, spinF=0, rollF=0, convF=0,c=0;
     let hue;
     let count, idx, i, leng;
-    let drawer = 3, ox=0, oy=0,
+    let drawer = 0, ox=0, oy=0,
         xcentre = 300, ycentre = 300;
     let f, realx, realy, d, step = 0.0001, symmetry = 1;
     let direction = 1;
     let sineArray = new Array(1025);
-    let colours = new Array(256);
+    let colors = new Array(256);
     let clearnow = true;
 
     // Function to initialize sine array and colors
     function init() {
-        for (i = 0; i < colours.length; i++) {
+        for (i = 0; i < colors.length; i++) {
             hue = (i * 0.0039) % 1;
-            colours[i] = `hsl(${hue * 360}, 100%, 50%)`;
+            colors[i] = `hsl(${hue * 360}, 100%, 50%)`;
         }
     }
 
@@ -107,26 +118,21 @@
 
     // Function to handle checkbox update
     function boxUpdate() {
-    const drawTypeInput = document.querySelector('input[name="drawType"]:checked');
-    if (drawTypeInput) {
-        theBox = drawTypeInput.value;
-        if (theBox == "Lines") drawer = 0;
-        if (theBox == "Dots") drawer = 1;
-        if (theBox == "2x2 squares") drawer = 2;
-        if (theBox == "3x3 squares") drawer = 3;
-        if (theBox == "4x4 squares") drawer = 4;
+      const drawTypeInput = document.querySelector('input[name="drawType"]:checked');
+      
+      const reverseBoxInput = document.getElementById('reverseBox');
+      if (reverseBoxInput) {
+          direction = reverseBoxInput.checked ? -1 : 1;
+      }
     }
-    const reverseBoxInput = document.getElementById('reverseBox');
-    if (reverseBoxInput) {
-        direction = reverseBoxInput.checked ? -1 : 1;
-    }
-}
 
     // Function to draw
     function draw(x, y, ox, oy, drawer) {
-        ctx.fillStyle = colours[1];
+        ctx.fillStyle = colors[1];
         if (drawer == 0) {
           ctx.beginPath(); 
+          ctx.strokeStyle = colors[1];
+          ctx.lineWidth=2;
           ctx.moveTo(x, y); 
           ctx.lineTo(ox, oy); 
           ctx.stroke();
