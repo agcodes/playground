@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Sadness Animation</title>
+    <style>
+        canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="enhancedSadnessCanvas" width="800" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('enhancedSadnessCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Array to store tear drop positions and speeds
+        const tears = [
+            { x: 100, y: 150, speed: 1 },
+            { x: 200, y: 300, speed: 2 },
+            { x: 300, y: 100, speed: 1.5 },
+            { x: 400, y: 200, speed: 2.5 },
+            { x: 500, y: 350, speed: 1.8 },
+            // Add more tears with different speeds
+        ];
+
+        function draw() {
+            // Draw an abstract representation of enhanced sadness
+            ctx.fillStyle = '#8795a1'; // Subdued blue-gray color
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw symbolic tear drops
+            ctx.fillStyle = '#1565c0'; // Dark blue color
+            tears.forEach(tear => drawTearDrop(tear.x, tear.y));
+
+            // Move tear drops with individual speeds
+            tears.forEach(tear => {
+                tear.y += tear.speed; // Adjust the speed of tears falling
+                if (tear.y > canvas.height) {
+                    tear.y = 0; // Reset tear drop position when it goes beyond the canvas
+                }
+            });
+
+            // Request the next animation frame
+            requestAnimationFrame(draw);
+        }
+
+        function drawTearDrop(x, y) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.bezierCurveTo(x + 15, y + 20, x + 30, y, x, y - 40);
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Start the animation
+        draw();
+    </script>
+</body>
+</html>

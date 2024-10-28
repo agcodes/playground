@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandelbrot Set Visualization</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fractalCanvas" width="800" height="800"></canvas>
+
+    <script>
+        const canvas = document.getElementById('fractalCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Define fractal boundaries
+        const LeftBorder = -2.5;
+        const RightBorder = 1.5;
+        const LowerBorder = -1.5;
+        const UpperBorder = 1.5;
+        const maxIterations = 100;  // Maximum iterations
+        const R = 10;   // Escape radius threshold
+
+        // Map canvas coordinates to complex plane coordinates
+        function mapToRange(value, sourceMin, sourceMax, destMin, destMax) {
+            return destMin + ((value - sourceMin) * (destMax - destMin)) / (sourceMax - sourceMin);
+        }
+
+        // Color mapping function based on iteration count
+        function getColor(iteration, L) {
+            const t = iteration / maxIterations;
+            if (L > R) {
+                return `rgb(0, 0, ${Math.min(255, Math.floor(255 * t))})`;  // Blue shades
+            } else if (L < -R) {
+                return `rgb(${Math.min(255, Math.floor(255 * t))}, ${Math.min(255, Math.floor(255 * t))}, 0)`;  // Yellow shades
+            } else if (L < 0) {
+                return 'black';  // Inside Mandelbrot set
+            } else {
+                return 'white';  // Outside but near Mandelbrot set
+            }
+        }
+
+        // Draw the Mandelbrot set
+        function drawFractal() {
+            for (let px = 0; px < width; px++) {
+                for (let py = 0; py < height; py++) {
+                    const cx = mapToRange(px, 0, width, LeftBorder, RightBorder);
+                    const cy = mapToRange(py, 0, height, LowerBorder, UpperBorder);
+
+                    let L = 0.0;
+                    let x = 0.0;
+                    let y = 0.0;
+                    let escaped = false;
+                    let iteration = 0;
+
+                    for (let n = 0; n < maxIterations; n++) {
+                        const temp = x * x - y * y + cx;
+                        y = 2.0 * x * y + cy;
+                        x = temp;
+
+                        const magnitudeSquared = x * x + y * y;
+                        L += Math.log(Math.sqrt(0.5 * magnitudeSquared));
+
+                        if (magnitudeSquared > 4) {
+                            escaped = true;
+                            iteration = n;
+                            break;
+                        }
+                    }
+
+                    ctx.fillStyle = getColor(iteration, L);
+                    ctx.fillRect(px, py, 1, 1);
+                }
+            }
+        }
+
+        // Start drawing
+        drawFractal();
+    </script>
+</body>
+</html>
