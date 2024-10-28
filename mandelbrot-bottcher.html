@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandelbrot Set with Böttcher Coordinates</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="mandelbrotCanvas" width="1000" height="1000"></canvas>
+
+    <script>
+        const canvas = document.getElementById('mandelbrotCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas dimensions
+        const width = 400;
+        const height = 400;
+
+        // Function to map Böttcher coordinates to canvas coordinates
+        function mapToCanvas(x, y) {
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = Math.min(width, height) / 2;
+
+            const u = x / (1 - Math.sqrt(x * x + y * y));
+            const v = y / (1 - Math.sqrt(x * x + y * y));
+
+            const canvasX = centerX + u * radius;
+            const canvasY = centerY - v * radius; // Note: Inverting y-coordinate to match canvas coordinate system
+
+            return { x: canvasX/2+width*1.5, y: canvasY/2+height };
+        }
+
+        // Function to check if a point is in the Mandelbrot set
+        function isInMandelbrotSet(cx, cy, maxIterations) {
+            let x = 0;
+            let y = 0;
+            let iteration = 0;
+            while (x * x + y * y <= 4 && iteration < maxIterations) {
+                const xTemp = x * x - y * y + cx;
+                y = 2 * x * y + cy;
+                x = xTemp;
+                iteration++;
+            }
+            return iteration === maxIterations;
+        }
+
+        // Draw Mandelbrot set using Böttcher coordinates
+        function drawMandelbrot() {
+            const maxIterations = 100;
+            const scale = 2;
+
+            for (let i = 0; i < width; i++) {
+                for (let j = 0; j < height; j++) {
+                    const x = (i - width / 2) / (Math.min(width, height) / 2);
+                    const y = (height / 2 - j) / (Math.min(width, height) / 2); // Invert y-coordinate to match Böttcher coordinate system
+
+                    if (isInMandelbrotSet(x, y, maxIterations)) {
+                        const mappedCoords = mapToCanvas(x, y);
+                        ctx.fillStyle = 'black';
+                        ctx.fillRect(mappedCoords.x, mappedCoords.y, scale, scale);
+                    }
+                }
+            }
+        }
+
+        drawMandelbrot();
+    </script>
+</body>
+</html>
