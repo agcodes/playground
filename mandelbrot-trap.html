@@ -63,9 +63,6 @@
             const colorRGB = [(R * Math.abs((1.0 - minDval) * (1.0 - minDval)))*255, (G * Math.abs(minDval * minDval))*255, (B * Math.abs(2.0 * (1.0 - minDval) * minDval))*255];
             
             ctx.fillStyle = `rgb(${colorRGB[0]}, ${colorRGB[1]}, ${colorRGB[2]})`;
-            
-            
-            //ctx.fillStyle = minDsgn > 0 ? `rgb(0, 0, ${csIdx})` : `rgb(${csIdx}, 0, 0)`;
             ctx.fillRect(x, y, 1, 1);
           }
         }
