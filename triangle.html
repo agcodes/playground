@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fractal Pattern</title>
+  <style>
+    canvas { border: 1px solid black; display: block; margin: auto; }
+    body { display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+  </style>
+</head>
+<body>
+  <canvas id="fractalCanvas" width="600" height="600"></canvas>
+  <script>
+    const canvas = document.getElementById('fractalCanvas');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Starting triangle vertices
+    const points = [
+      { x: width / 2, y: 50 },
+      { x: 50, y: height - 50 },
+      { x: width - 50, y: height - 50 }
+    ];
+
+    // Initial point to start the fractal
+    let currentPoint = { x: Math.random() * width, y: Math.random() * height };
+
+    // Draw the initial triangle
+    ctx.fillStyle = 'black';
+    points.forEach(point => {
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, 2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    function drawPoint(){
+    // Choose a random vertex from the triangle
+      const target = points[Math.floor(Math.random() * points.length)];
+      // Find the midpoint between the current point and chosen vertex
+      currentPoint = {
+        x: (currentPoint.x + target.x) / 2,
+        y: (currentPoint.y + target.y) / 2
+      };
+      // Draw the point
+      ctx.fillStyle = 'purple';
+      ctx.fillRect(currentPoint.x, currentPoint.y, 1, 1);
+    
+    }
+    function drawFractal() {
+      for (let i=0;i<100;i++){
+       drawPoint();
+      }
+     
+      requestAnimationFrame(drawFractal);
+    }
+
+    drawFractal();
+  </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fractal Visualization</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    canvas { display: block; margin: auto; background: black; }
+    body { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .input-group { margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <div class="container text-center">
+    <h1 class="mb-4">Julia Set Visualization</h1>
+    <canvas width="700" height="700" id="fractalCanvas"></canvas>
+    <div class="input-group">
+      <input type="number" id="realPart" class="form-control" placeholder="Real part (r)" value="-0.1" step="0.01">
+    </div>
+    <div class="input-group">
+      <input type="number" id="imaginaryPart" class="form-control" placeholder="Imaginary part (i)" value="0.75" step="0.01">
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("fractalCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const ITERS = 70;
+    const USE_THIN_LINES = true;
+    const TRIM_EDGES = true;
+
+    function ramp(minval, maxval, val) {
+      return Math.max(0, Math.min(1, (val - minval) / (maxval - minval)));
+    }
+
+    function drawFractal(r, i) {
+      const width = canvas.width;
+      const height = canvas.height;
+
+      for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
+          // Normalized pixel coordinates (from -2 to 2)
+          const zx = 4 * (x / width - 0.5);
+          const zy = 4 * (y / height - 0.5);
+          
+          let z = { x: zx, y: zy };
+          const c = { x: r, y: i };
+          let min_dist = Math.min(Math.abs(z.x), Math.abs(z.y));
+          let grad = { x: 1.0, y: 0.0 };
+
+          for (let iter = 0; iter < ITERS; iter++) {
+            const zprime = { x: 2 * z.x, y: 2 * z.y };
+            grad = { x: zprime.x * grad.x - zprime.y * grad.y, y: zprime.x * grad.y + zprime.y * grad.x };
+
+            // Perform Julia iteration
+            z = { x: z.x * z.x - z.y * z.y + c.x, y: 2 * z.x * z.y + c.y };
+
+            // Check for escape
+            if (z.x * z.x + z.y * z.y > 4) {
+              if (TRIM_EDGES) {
+                min_dist = 10.0;
+              }
+              break;
+            }
+
+            // Calculate distances
+            const dist1 = Math.abs(z.x - 0) * (1 / Math.hypot(grad.x, grad.y));
+            const dist2 = Math.abs(z.y - 0) * (1 / Math.hypot(grad.x, grad.y));
+            min_dist = Math.min(min_dist, Math.min(dist1, dist2));
+          }
+
+          let col;
+          if (USE_THIN_LINES) {
+            col = ramp(0, 2, min_dist);
+          } else {
+            min_dist = min_dist * Math.sqrt(2);
+            col = [
+              ramp(0, 2, min_dist),
+              ramp(1, 3, min_dist),
+              ramp(2, 4, min_dist),
+            ];
+          }
+
+          // Set pixel color
+          ctx.fillStyle = `rgb(${col * 255}, ${col * 255}, ${col * 255})`;
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+
+    function updateFractal() {
+      const r = parseFloat(document.getElementById("realPart").value);
+      const i = parseFloat(document.getElementById("imaginaryPart").value);
+      drawFractal(r, i);
+    }
+
+    // Add event listeners to inputs to redraw when changed
+    document.getElementById("realPart").addEventListener("input", updateFractal);
+    document.getElementById("imaginaryPart").addEventListener("input", updateFractal);
+
+    // Initial draw
+    updateFractal();
+  </script>
+
+</body>
+</html>

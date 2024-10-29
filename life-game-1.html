@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game of Life</title>
+  <style>
+    canvas { border: 1px solid black; display: block; margin: auto; }
+    body { display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="620" height="620"></canvas>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const cellSize = 6;
+    const rows = Math.floor(620/cellSize);
+    const cols = Math.floor(620/cellSize);
+    let grid = createGrid();
+    let gameIsOver = false; // Track game state
+
+    // Define a palette of colors for alive cells
+    const colors = [
+      "blue"
+    ];
+    const deadColor = "white";
+
+    function createGrid() {
+      return Array.from({ length: rows }, () => Array(cols).fill(0));
+    }
+
+    // Initialize random pattern
+    function initialize() {
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          grid[i][j] = Math.random() > 0.75 ? 1 : 0;
+        }
+      }
+      gameIsOver = false; // Reset game over state
+    }
+
+    // Draw cells on the canvas
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (grid[i][j] === 1) {
+            // Assign a random color from the palette for alive cells
+            ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+          } else {
+            ctx.fillStyle = "yellow";
+          }
+          ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    // Count live neighbors
+    function countNeighbors(x, y) {
+      let count = 0;
+      for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+          if (i === 0 && j === 0) continue;
+          const row = (x + i + rows) % rows;
+          const col = (y + j + cols) % cols;
+          count += grid[row][col];
+        }
+      }
+      return count;
+    }
+
+    // Update the grid
+    function updateGrid() {
+      const newGrid = createGrid();
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const liveNeighbors = countNeighbors(i, j);
+          if (grid[i][j] === 1) {
+            newGrid[i][j] = liveNeighbors === 2 || liveNeighbors === 3  ? 1 : 0;
+          } else {
+            newGrid[i][j] =  liveNeighbors === 3 ? 1 : 0;
+          }
+        }
+      }
+      grid = newGrid;
+    }
+    
+    function gameLoop() {
+      drawGrid();
+      updateGrid();
+      requestAnimationFrame(gameLoop);
+    }
+
+    initialize();
+    gameLoop();
+  </script>
+</body>
+</html>

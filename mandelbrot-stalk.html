@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandelbrot Stalk Visualization</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        canvas { display: block; margin: auto; background: black; }
+        body { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .input-group { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container text-center">
+        <h1 class="mb-4">Mandelbrot Stalk Visualization</h1>
+        <canvas width="700" height="700" id="fractalCanvas"></canvas>
+        <div class="input-group">
+            <input type="number" id="transX" class="form-control" placeholder="Transform X" value="0" step="0.01">
+        </div>
+        <div class="input-group">
+            <input type="number" id="transY" class="form-control" placeholder="Transform Y" value="0" step="0.01">
+        </div>
+        <div class="input-group">
+            <input type="number" id="dividend" class="form-control" placeholder="Dividend" value="0.05" step="0.1">
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("fractalCanvas");
+        const ctx = canvas.getContext("2d");
+        const maxIterations = 100;
+
+        function complexMultiply(z) {
+            return {
+                x: z.x * z.x - z.y * z.y,
+                y: 2 * z.x * z.y
+            };
+        }
+
+        function drawFractal(transformationVector, dividend) {
+            const width = canvas.width;
+            const height = canvas.height;
+
+            for (let px = 0; px < width; px++) {
+                for (let py = 0; py < height; py++) {
+                    // Scale pixel coordinates to Mandelbrot range
+                    const zx = (px / width) * 3.5 - 2.5; // Map to (-2.5, 1)
+                    const zy = (py / height) * 3 - 1.5; // Map to (-1, 1)
+
+                    let x = zx;
+                    let y = zy;
+                    let trapDistance = 10000; // Initialize a high distance
+                    let iteration = 0;
+
+                    while (x * x + y * y < 4 && iteration < maxIterations) {
+                        const z = { x: x, y: y };
+                        const c = { x: zx, y: zy };
+                        
+                        // Compute the new value of z
+                        const zSquared = complexMultiply(z);
+                        x = zSquared.x + c.x; // Update x
+                        y = zSquared.y + c.y; // Update y
+
+                        // Compute distances to the transformation vector
+                        const distanceToX = Math.abs(x + transformationVector.x);
+                        const distanceToY = Math.abs(y + transformationVector.y);
+                        const smallestDistance = Math.min(distanceToX, distanceToY);
+
+                        trapDistance = Math.min(trapDistance, smallestDistance);
+                        iteration++;
+                    }
+
+                    // Set the pixel color based on the distance and dividend
+                    const color = Math.min(255, Math.floor(trapDistance * 255 / dividend));
+                    ctx.fillStyle = `rgb(${color}, ${color}, ${color})`;
+                    ctx.fillRect(px, py, 1, 1);
+                }
+            }
+        }
+
+        function updateFractal() {
+            const transX = parseFloat(document.getElementById("transX").value);
+            const transY = parseFloat(document.getElementById("transY").value);
+            const dividend = parseFloat(document.getElementById("dividend").value);
+            drawFractal({ x: transX, y: transY }, dividend);
+        }
+
+        // Add event listeners to inputs to redraw when changed
+        document.getElementById("transX").addEventListener("input", updateFractal);
+        document.getElementById("transY").addEventListener("input", updateFractal);
+        document.getElementById("dividend").addEventListener("input", updateFractal);
+
+        // Initial draw
+        updateFractal();
+    </script>
+</body>
+</html>

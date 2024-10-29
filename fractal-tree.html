@@ -26,8 +26,8 @@
 
   // Initial parameters for the tree
   const startX = canvas.width / 2;
-  const startY = canvas.height;
-  const startLength = 100;
+  const startY = canvas.height-canvas.height/50;
+  const startLength = canvas.height/3.5;
   const angle = -Math.PI / 2; // Initial angle (pointing up)
 
   // Define the IFS function for drawing a branch
@@ -44,8 +44,8 @@
     ctx.stroke();
 
     // Recursively draw two smaller branches
-    drawBranch(endX, endY, length * 0.7, angle + 0.3, depth - 1);
-    drawBranch(endX, endY, length * 0.7, angle - 0.3, depth - 1);
+    drawBranch(endX, endY, length * 0.72, angle + 0.5, depth - 1);
+    drawBranch(endX, endY, length * 0.72, angle - 0.5, depth - 1);
   }
 
   // Initial call to draw the tree
