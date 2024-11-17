@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamming Weight Visualization on Canvas</title>
+</head>
+<body>
+    <h1>Hamming Weight of (x AND y) Visualization</h1>
+    <canvas id="canvas" width="802" height="802"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const cellSize = 1;   // Each cell will be x pixels on the canvas
+
+        // Function to calculate Hamming weight
+        function hammingWeight(num) {
+            let weight = 0;
+            while (num) {
+                weight += num & 1;
+                num >>= 1;
+            }
+            return weight;
+        }
+
+        // Function to convert a number to sign-magnitude binary representation and calculate AND operation
+        function calculateSignMagnitudeHammingWeight(x, y) {
+            const xBinary = Math.abs(x) | (x < 0 ? (1 << 7) : 0); // 7 bits + sign bit
+            const yBinary = Math.abs(y) | (y < 0 ? (1 << 7) : 0);
+            const andResult = xBinary & yBinary;
+            return hammingWeight(andResult);
+        }
+        
+        const max = 400;
+        // Draw the grid on canvas
+        for (let x = -max; x <= max; x++) {
+            for (let y = -max; y <= max; y++) {
+                const weight = calculateSignMagnitudeHammingWeight(x, y);
+
+                // Normalize the Hamming weight to a lum (0-360 degrees)
+                const lum = (weight / 8) * 100; // Maximum of 8 bits
+
+                // Set the fill color
+                ctx.fillStyle = `hsl(300, 100%, ${lum}%)`;
+
+                // Map x and y to canvas coordinates
+                const canvasX = (x + max) * cellSize;
+                const canvasY = (y + max) * cellSize;
+
+                // Draw a small square representing the Hamming weight of (x, y)
+                ctx.fillRect(canvasX, canvasY, cellSize, cellSize);
+            }
+        }
+    </script>
+</body>
+</html>

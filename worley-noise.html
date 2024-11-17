@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worley Noise</title>
+    <style>
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="worleyCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('worleyCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 800;
+
+        const gridSize = 50; // Size of each grid cell
+        const seedCount = 1; // Number of seeds per cell
+        const seeds = [];
+
+        // Function to generate random seeds
+        function generateSeeds() {
+            for (let x = 0; x < canvas.width / gridSize; x++) {
+                for (let y = 0; y < canvas.height / gridSize; y++) {
+                    for (let i = 0; i < seedCount; i++) {
+                        const seedX = x * gridSize + Math.random() * gridSize;
+                        const seedY = y * gridSize + Math.random() * gridSize;
+                        seeds.push({ x: seedX, y: seedY });
+                    }
+                }
+            }
+        }
+
+        // Function to calculate the distance to the nearest seed
+        function getNearestDistance(x, y) {
+            let minDist = Infinity;
+            seeds.forEach(seed => {
+                const dist = Math.sqrt((x - seed.x) ** 2 + (y - seed.y) ** 2);
+                if (dist < minDist) minDist = dist;
+            });
+            return minDist;
+        }
+
+        // Function to draw Worley noise
+        function drawWorleyNoise() {
+            const imageData = ctx.createImageData(canvas.width, canvas.height);
+            for (let x = 0; x < canvas.width; x++) {
+                for (let y = 0; y < canvas.height; y++) {
+                    const distance = getNearestDistance(x, y);
+                    const color = Math.floor((distance / gridSize) * 255); // Normalize distance
+                    const index = (y * canvas.width + x) * 4;
+                    imageData.data[index] = color+50; // R
+                    imageData.data[index + 1] = color; // G
+                    imageData.data[index + 2] = color; // B
+                    imageData.data[index + 3] = 255; // A
+                }
+            }
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        // Generate seeds and draw the noise
+        generateSeeds();
+        drawWorleyNoise();
+    </script>
+</body>
+</html>
