@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golden Ratio Spiral Orbit Trap Animation</title>
+</head>
+<body>
+    <canvas id="orbitTrapCanvas" width="800" height="800"></canvas>
+    <script>
+        const canvas = document.getElementById('orbitTrapCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const width = canvas.width = 800;
+        const height = canvas.height = 800;
+
+        // Golden Ratio constant
+        const phi = (1 + Math.sqrt(5)) / 2;
+
+        // Complex number class
+        class Complex {
+            constructor(real, imag) {
+                this.real = real;
+                this.imag = imag;
+            }
+
+            abs() {
+                return Math.sqrt(this.real * this.real + this.imag * this.imag);
+            }
+
+            arg() {
+                return Math.atan2(this.imag, this.real);
+            }
+
+            add(c) {
+                return new Complex(this.real + c.real, this.imag + c.imag);
+            }
+
+            square() {
+                return new Complex(this.real * this.real - this.imag * this.imag, 2 * this.real * this.imag);
+            }
+        }
+
+        // Function for the Golden Ratio Spiral orbit trap
+        function f(z) {
+            const absZ = z.abs();
+            const argZ = z.arg();
+            const r = Math.log(absZ) / (4 * Math.log(phi)) - argZ / (2 * Math.PI);
+            return 4 * Math.abs(r - Math.round(r));
+        }
+
+        // OrbitTrap coloring function
+        function orbitTrap(c) {
+            let z = new Complex(0, 0);
+            let i = 0;
+            let maxIterations = 2000;
+            // remove && (i < 2 || f(z) > 1)
+            while (i < maxIterations && z.abs() < 1000) {
+                z = z.square().add(c);
+                i++;
+            }
+            const hue = (z.arg() / (2 * Math.PI) + 1) % 1;
+            const trap = f(z);
+            const saturation = Math.min(1, 2 * trap);
+            const brightness = Math.max(0, Math.min(1, 2 * (1 - trap)));
+            
+            if (i>=maxIterations){
+                return `hsl(${hue * 360}, ${saturation * 100}%, ${brightness * 50}%)`;
+            }
+            else {
+           
+                return `hsl(${240}, ${saturation * 100}%, ${i*2}%)`;
+            }
+           return null;
+        }
+
+        // Define the region of the complex plane to visualize
+        const xmin = -2.4;
+        const xmax = 1.2;
+        const ymin = -1.6;
+        const ymax = 1.6;
+
+        // Drawing one line of the orbit trap
+        function drawLine(y) {
+            const scaleX = (xmax - xmin) / width; // Horizontal scaling based on xmin, xmax
+            const scaleY = (ymax - ymin) / height; // Vertical scaling based on ymin, ymax
+
+            for (let x = 0; x < width; x++) {
+                const xc = xmin + x * scaleX;  // Map pixel to complex plane (x)
+                const yc = ymin + y * scaleY;  // Map pixel to complex plane (y)
+                const color = orbitTrap(new Complex(xc, yc));
+  
+                if (color){
+                
+                
+                  ctx.fillStyle = color;
+                  ctx.fillRect(x, y, 1, 1);
+                }
+            }
+        }
+
+        // Animation to draw line by line
+        let currentLine = 0;
+
+        function animate() {
+            if (currentLine < height) {
+                drawLine(currentLine);
+                currentLine++;
+                requestAnimationFrame(animate);
+            }
+        }
+
+        // Start animation
+        animate();
+    </script>
+</body>
+</html>
