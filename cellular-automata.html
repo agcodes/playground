@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cellular Automata - HSL Colors</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            display: block;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="caCanvas" width="512" height="512"></canvas>
+    <script>
+        const canvas = document.getElementById('caCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const initialSize = 4; // Taille de la grille initiale
+        const finalResolution = 512; // Résolution finale du canvas
+
+        // Génère une grille initiale avec des indices de couleur
+        function generateInitialGrid(size) {
+            return Array.from({ length: size }, () =>
+                Array.from({ length: size }, () => Math.floor(Math.random() * 360)) // Teintes aléatoires
+            );
+        }
+
+        // Redimensionne la grille avec une règle qui ajoute des variations de teinte
+        function upscaleGrid(grid) {
+            const newSize = grid.length * 2;
+            const newGrid = Array.from({ length: newSize }, () => Array(newSize).fill(0));
+
+            for (let y = 0; y < grid.length; y++) {
+                for (let x = 0; x < grid[y].length; x++) {
+                    const parentHue = grid[y][x];
+                    // Variation légère de teinte autour du parent
+                    const variation = () => (parentHue + Math.floor(Math.random() * 20 - 10) + 360) % 360;
+
+                    newGrid[y * 2][x * 2] = variation();
+                    newGrid[y * 2][x * 2 + 1] = variation();
+                    newGrid[y * 2 + 1][x * 2] = variation();
+                    newGrid[y * 2 + 1][x * 2 + 1] = variation();
+                }
+            }
+            return newGrid;
+        }
+
+        // Dessine la grille sur le canvas
+        function drawGrid(grid, cellSize) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let y = 0; y < grid.length; y++) {
+                for (let x = 0; x < grid[y].length; x++) {
+                    const hue = grid[y][x];
+                    ctx.fillStyle = `hsl(${hue}, 50%, 50%)`; // Applique la couleur HSL
+                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+
+        // Exécute l'automate
+        function runAutomata() {
+            let grid = generateInitialGrid(initialSize);
+            let resolution = initialSize; // Résolution actuelle
+            let cellSize = finalResolution / resolution; // Taille de chaque cellule
+
+            drawGrid(grid, cellSize);
+
+            const interval = setInterval(() => {
+                if (resolution >= finalResolution) {
+                    clearInterval(interval); // Arrête l'exécution une fois la résolution finale atteinte
+                    return;
+                }
+
+                grid = upscaleGrid(grid); // Double la résolution de la grille
+                resolution *= 2;
+                cellSize = finalResolution / resolution;
+
+                drawGrid(grid, cellSize); // Redessine avec la nouvelle résolution
+            }, 1000); // Met à jour chaque seconde
+        }
+
+        runAutomata();
+    </script>
+</body>
+</html>

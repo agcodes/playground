@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisation des Trajectoires d'Évasion du Mandelbrot</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000;
+        }
+        canvas {
+            border: 1px solid #fff;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="mandelbrotCanvas" width="700" height="700"></canvas>
+
+    <script>
+        const canvas = document.getElementById('mandelbrotCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const width = canvas.width;
+        const height = canvas.height;
+
+        const maxIterations = 300;
+        const escapeRadius = 2;
+        const xMin = -2;
+        const xMax = 1.2;
+        const yMin = -1.5;
+        const yMax = 1.5;
+        const gridSize = 1; // Taille de la grille (pixels)
+        let currentY = 0; // Ligne actuelle
+
+        function mandelbrotLine(y) {
+            for (let x = 0; x < width; x += gridSize) {
+                const real = xMin + (x / width) * (xMax - xMin);
+                const imag = yMin + (y / height) * (yMax - yMin);
+
+                let zx = 0;
+                let zy = 0;
+                let iteration = 0;
+                let trajectory = [];
+
+                while (zx * zx + zy * zy < escapeRadius * escapeRadius && iteration < maxIterations) {
+                    trajectory.push({ zx, zy, iteration });
+                    const xTemp = zx * zx - zy * zy + real;
+                    zy = 2 * zx * zy + imag;
+                    zx = xTemp;
+                    iteration++;
+                }
+
+                if (iteration < maxIterations) {
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    trajectory.forEach(point => {
+                    const color = (point.iteration / maxIterations) * 255;
+                   
+                     ctx.strokeStyle = `rgb(${color}, 0, 0)`;
+                        ctx.lineTo(
+                            point.zx + width / 2,
+                            point.zy + height / 2
+                        );
+                    });
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function drawLineByLine() {
+            if (currentY < height) {
+                mandelbrotLine(currentY); // Dessine la ligne actuelle
+                currentY += gridSize; // Passe à la ligne suivante
+                requestAnimationFrame(drawLineByLine); // Appelle la fonction pour continuer
+            }
+        }
+
+        // Lance le dessin au chargement de la page
+        window.onload = function () {
+            ctx.clearRect(0, 0, width, height);
+            drawLineByLine();
+        };
+    </script>
+</body>
+</html>

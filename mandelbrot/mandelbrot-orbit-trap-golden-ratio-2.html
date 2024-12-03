@@ -55,7 +55,7 @@
             let i = 0;
             let maxIterations = 2000;
             // remove && (i < 2 || f(z) > 1)
-            while (i < maxIterations && z.abs() < 1000) {
+            while (i < maxIterations && z.abs() < 4) {
                 z = z.square().add(c);
                 i++;
             }

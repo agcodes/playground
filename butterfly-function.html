@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Butterfly Function</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: black;
+        }
+        canvas {
+            border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="butterflyCanvas" width="800" height="800"></canvas>
+    <script>
+        const canvas = document.getElementById('butterflyCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const width = canvas.width;
+        const height = canvas.height;
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        const scale = 100; // Scaling factor to make the function visible
+
+        function butterflyFunction(x) {
+            return Math.sin(x) * (
+                Math.exp(Math.cos(x)) - 
+                2 * Math.cos(4 * x) - 
+                Math.pow(Math.sin(x / 12), 5)
+            );
+        }
+
+        function drawButterfly() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.strokeStyle = 'rgba(255, 200, 0, 0.8)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+
+            const step = 0.01; // Step size for drawing
+            for (let x = -20; x <= 20; x += step) {
+                const r = butterflyFunction(x) * scale;
+                const angle = x;
+
+                // Convert polar coordinates (r, angle) to Cartesian (x, y)
+                const cartesianX = centerX + r * Math.cos(angle);
+                const cartesianY = centerY - r * Math.sin(angle);
+
+                if (x === -20) {
+                    ctx.moveTo(cartesianX, cartesianY);
+                } else {
+                    ctx.lineTo(cartesianX, cartesianY);
+                }
+            }
+
+            ctx.stroke();
+        }
+
+        drawButterfly();
+    </script>
+</body>
+</html>

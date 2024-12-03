@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fractal Tree</title>
+</head>
+<body>
+    <canvas id="fractalTree" width="600" height="600"></canvas>
+    <script>
+        // Function to draw a fractal tree
+        function drawTree(ctx, p1, theta, r, i) {
+            if (i <= 0) return [];
+
+            // Calculate the endpoint for the current branch
+            const p2 = {
+                x: p1.x + r * Math.cos(theta),
+                y: p1.y - r * Math.sin(theta)
+            };
+
+            // Set the color and line thickness based on the branch length
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = `rgb(${Math.min(0.5 * r * 255, 255)}, ${Math.min(0.5 * r * 255, 255)}, 0)`;
+            ctx.stroke();
+
+            // Recursively draw the two branches
+            drawTree(ctx, p2, theta - Math.PI / 6, 0.8 * r, i - 1);  // Left branch
+            drawTree(ctx, p2, theta + Math.PI / 4, 0.7 * r, i - 1);  // Right branch
+        }
+
+        // Set up the canvas and context
+        const canvas = document.getElementById("fractalTree");
+        const ctx = canvas.getContext("2d");
+
+        // Clear the canvas and set background
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "rgb(0, 0, 0)"; // black background
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Initialize tree parameters and draw it
+        const p1 = { x: canvas.width / 2.2, y: canvas.height - 100 }; // Starting point (near the bottom center)
+        const theta = Math.PI / 2; // Initial angle (vertical)
+        const r = 110; // Initial branch length
+        const depth = 11; // Recursion depth
+
+        // Start drawing the fractal tree
+        drawTree(ctx, p1, theta, r, depth);
+    </script>
+</body>
+</html>

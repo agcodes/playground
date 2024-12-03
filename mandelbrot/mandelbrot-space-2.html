@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Mandelbrot</title>
+  <style>
+    canvas { display: block; margin: auto; background: black; }
+  </style>
+</head>
+<body>
+  <canvas id="mandelbrotCanvas" width="800" height="800"></canvas>
+  <script>
+    const canvas = document.getElementById('mandelbrotCanvas');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const maxEscapeIters = 100;
+    const maxNewtonIters = 200;
+    const epsSquared = 0.01;
+
+    class Complex {
+      constructor(real, imag) {
+        this.real = real;
+        this.imag = imag;
+        this.r = real;
+        this.i = imag;
+      }
+      sub(c) { return new Complex(this.real - c.real, this.imag - c.imag); }
+      add(c) { return new Complex(this.real + c.real, this.imag + c.imag); }
+      
+	div(z) {
+		const denominator = z.r * z.r + z.i * z.i;
+        return new Complex(
+			(this.r * z.r + this.i * z.i) / denominator,
+			(this.i * z.r - this.r * z.i) / denominator
+		);
+		//return r0.mulReal(-1);
+	}
+      mul(c) {
+        return new Complex(
+          this.real * c.real - this.imag * c.imag,
+          this.real * c.imag + this.imag * c.real
+        );
+      }
+      magSquared() {
+        return this.real * this.real + this.imag * this.imag;
+      }
+      magnitude() {
+        return Math.sqrt(this.magSquared());
+      }
+    }
+
+    function escapes(c) {
+      let z = new Complex(0, 0);0
+      for (let n = 0; n < maxEscapeIters; n++) {
+        if (z.magSquared() > 5) {
+          return { escape: true, distance: 0, n: n };
+        }
+        z = z.mul(z).add(c);
+      }
+      return { escape: false, n : maxEscapeIters };
+    }
+
+
+    function bfor(p, c) {
+      let z = c;
+      for (let iter = 0; iter < maxNewtonIters; iter++) {
+         const fz = z.mul(z).mul(z).sub(c); // Adjust for desired `F_p` equation.
+        const dfz = new Complex(2, 0).mul(z).add(new Complex(1, 0));
+        const nextZ = z.sub(fz.div(dfz).mul(new Complex(-1,0)));
+        if (Math.abs(nextZ.sub(z).real) < epsSquared) {
+          return nextZ;
+        }
+        z = nextZ;
+      }
+      return null;
+    }
+
+    function renderLine(y) {
+      const imageData = ctx.createImageData(width, 1);
+      const row = imageData.data;
+      const cy = (y - height / 2) / (height / 4);
+      for (let x = 0; x < width; x++) {
+        const cx = (x - width / 2) / (width / 4);
+        const c = new Complex(cx, cy);
+
+        const escapeResult = escapes(c);
+        if (escapeResult.escape) {
+          row[x * 4] = escapeResult.n*10;
+          row[x * 4 + 1] = escapeResult.n*10;
+          row[x * 4 + 2] = escapeResult.n*10;
+          row[x * 4 + 3] = 255;
+        } else {
+          const point = bfor(1, c); // Using period 1 for demonstration.
+          if (point) {
+           
+            
+             row[x * 4] = 255;
+            row[x * 4 + 1] =0;
+            row[x * 4 + 2] =0;
+            row[x * 4 + 3] = 255;
+            
+          } else {
+            row[x * 4] = 0;
+            row[x * 4 + 1] = 0;
+            row[x * 4 + 2] = 0;
+            row[x * 4 + 3] = 255;
+          }
+        }
+      }
+      ctx.putImageData(imageData, 0, y);
+    }
+
+    let currentLine = 0;
+
+    function animate() {
+      if (currentLine < height) {
+        renderLine(currentLine++);
+        requestAnimationFrame(animate);
+      }
+    }
+
+    animate();
+  </script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mandelbrot Polar Animation</title>
+  <style>
+    canvas {
+      display: block;
+      margin: auto;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="mandelbrotCanvas" width="800" height="800"></canvas>
+  <script>
+    const canvas = document.getElementById('mandelbrotCanvas');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const maxNewtonIters = 10;
+    const maxPeriod = 10;
+    const epsSquared = 0.1;
+    let currentLine = 0; // Suivi de la ligne courante
+
+    class Complex {
+      constructor(real, imag) {
+        this.real = real;
+        this.imag = imag;
+      }
+
+      add(other) {
+        return new Complex(this.real + other.real, this.imag + other.imag);
+      }
+
+      sub(other) {
+        return new Complex(this.real - other.real, this.imag - other.imag);
+      }
+
+      mul(other) {
+        return new Complex(
+          this.real * other.real - this.imag * other.imag,
+          this.real * other.imag + this.imag * other.real
+        );
+      }
+
+      div(other) {
+        const denominator = other.real * other.real + other.imag * other.imag;
+        return new Complex(
+          (this.real * other.real + this.imag * other.imag) / denominator,
+          (this.imag * other.real - this.real * other.imag) / denominator
+        );
+      }
+
+      magSquared() {
+        return this.real * this.real + this.imag * this.imag;
+      }
+
+      mag() {
+        return Math.sqrt(this.magSquared());
+      }
+    }
+
+    function mandelbrotPoint(c) {
+      if (c.magSquared() > 4) return null; // Hors du Mandelbrot
+
+      for (let p = 1; p <= maxPeriod; p++) {
+        const z0 = findFixedPoint(c, p);
+        if (z0 === null) continue;
+
+        const b = evaluateB(c, z0, p);
+        if (b.mag() <= 1) {
+          return b; // Trouvé \( b \) valide
+        }
+      }
+
+      return null;
+    }
+
+    function findFixedPoint(c, p) {
+      let z = new Complex(0, 0);
+
+      for (let iter = 0; iter < maxNewtonIters; iter++) {
+        const [fp, fpPrime] = iterateFp(z, c, p);
+        const zNext = z.sub(fp.div(fpPrime));
+
+        if (zNext.sub(z).magSquared() < epsSquared) {
+          return zNext;
+        }
+
+        z = zNext;
+      }
+
+      return null;
+    }
+
+    function iterateFp(z, c, p) {
+      let fp = z;
+      let fpPrime = new Complex(1, 0);
+
+      for (let i = 0; i < p; i++) {
+        const zSquared = fp.mul(fp);
+        fp = zSquared.add(c);
+
+        const twoZ = new Complex(2 * fp.real, 2 * fp.imag);
+        fpPrime = fpPrime.mul(twoZ);
+      }
+
+      return [fp, fpPrime];
+    }
+
+    function evaluateB(c, z, p) {
+      let fpPrime = new Complex(1, 0);
+
+      for (let i = 0; i < p; i++) {
+        const twoZ = new Complex(2 * z.real, 2 * z.imag);
+        fpPrime = fpPrime.mul(twoZ);
+      }
+
+      return fpPrime;
+    }
+
+    function polarToColor(b) {
+      const hue = Math.atan2(b.imag, b.real) / (2 * Math.PI) + 0.5;
+      const brightness = Math.min(1, b.mag());
+      const color = hsvToRgb(hue, 1, brightness);
+      return color.map(v => Math.floor(v * 255));
+    }
+
+    function hsvToRgb(h, s, v) {
+      const i = Math.floor(h * 6);
+      const f = h * 6 - i;
+      const p = v * (1 - s);
+      const q = v * (1 - f * s);
+      const t = v * (1 - (1 - f) * s);
+      const mod = i % 6;
+      const [r, g, b] = [
+        [v, t, p],
+        [q, v, p],
+        [p, v, t],
+        [p, q, v],
+        [t, p, v],
+        [v, p, q],
+      ][mod];
+      return [r, g, b];
+    }
+
+    function renderLine(line) {
+      const imageData = ctx.createImageData(width, 1);
+      const pixelData = imageData.data;
+
+      const cy = (line - height / 2) / (height / 4);
+
+      for (let x = 0; x < width; x++) {
+        const cx = (x - width / 2) / (width / 4);
+        const c = new Complex(cx, cy);
+
+        const b = mandelbrotPoint(c);
+        const color = b ? polarToColor(b) : [0, 0, 0];
+
+        const pixelIndex = x * 4;
+        pixelData[pixelIndex] = color[0];
+        pixelData[pixelIndex + 1] = color[1];
+        pixelData[pixelIndex + 2] = color[2];
+        pixelData[pixelIndex + 3] = 255;
+      }
+
+      ctx.putImageData(imageData, 0, line);
+    }
+
+    function animateMandelbrot() {
+      if (currentLine >= height) return;
+
+      renderLine(currentLine);
+      currentLine++;
+      requestAnimationFrame(animateMandelbrot);
+    }
+
+    // Démarre l'animation
+    animateMandelbrot();
+  </script>
+</body>
+</html>

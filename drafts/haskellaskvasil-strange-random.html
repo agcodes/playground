@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strange Random Pattern</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            display: block;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="500" height="500"></canvas>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const n = 30000;
+        const randomValues = generateRandomValues();
+
+        // Generate random values
+        function generateRandomValues() {
+            const values = [];
+            for (let i = 0; i < n; i++) {
+                values.push(Math.random());  // Native random values
+            }
+            return values;
+        }
+
+        // Convert value to RGB color
+        function colorize(value) {
+            if (value >= 0 && value <= 255) return `rgb(255, ${value}, 0)`;
+            else if (value >= 255 && value <= 510) return `rgb(${510 - value}, 255, 0)`;
+            else if (value >= 510 && value <= 1020) return `rgb(0, ${1020 - value}, 255)`;
+            else return `rgb(${value - 1020}, 0, 255)`;
+        }
+
+        // Mathematical transformations for x and y positions
+        function calculate(xa, ya, c, n, index) {
+            return Math.tan(xa) * Math.tan(xa) - Math.sin(ya) * Math.sin(ya) + (c[index] / 10);
+        }
+
+        function calculateY(xa, ya, c, n, index, nb) {
+            return nb * Math.tan(xa) * Math.sin(ya) + (c[30000 - index] / 10);
+        }
+
+        // Draw the pattern on the canvas
+        function draw() {
+            let x = 1, y = 1, index = 0, nb = 0, xa = 1, ya = 1;
+            for (let i = 0; i < n; i++) {
+                const c = randomValues;
+                const x1 = calculate(xa, ya, c, i, index);
+                const y1 = calculateY(xa, ya, c, i, index, nb);
+                
+                const m = nb * xa * ya;
+                const l = 300 * m;
+                const pointX = 50 * x1 + 250;  // Ensure it stays within canvas range
+                const pointY = 50 * y1 + 250;  // Ensure it stays within canvas range
+
+                // Draw point on the canvas
+                ctx.fillStyle = colorize(Math.round(l));
+                ctx.beginPath();
+                ctx.arc(pointX, pointY, 1, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Update variables for next iteration
+                index = (i % 2 === 0) ? index : index + 1;
+                nb = (i % 4 === 0) ? 0 : nb + 1;
+                xa = (i % 13 === 0) ? 1 : x1;
+                ya = (i % 13 === 0) ? 1 : y1;
+            }
+        }
+
+        draw();
+    </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Mandelbrot</title>
+  <style>
+    canvas { display: block; margin: auto; background: black; }
+  </style>
+</head>
+<body>
+  <canvas id="mandelbrotCanvas" width="800" height="800"></canvas>
+  <script>
+    const canvas = document.getElementById('mandelbrotCanvas');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const maxEscapeIters = 1000;
+    const maxNewtonIters = 100;
+    const epsSquared = 0.01;
+
+    class Complex {
+      constructor(real, imag) {
+        this.real = real;
+        this.imag = imag;
+      }
+      sub(c) { return new Complex(this.real - c.real, this.imag - c.imag); }
+      add(c) { return new Complex(this.real + c.real, this.imag + c.imag); }
+      mul(c) {
+        return new Complex(
+          this.real * c.real - this.imag * c.imag,
+          this.real * c.imag + this.imag * c.real
+        );
+      }
+      magSquared() {
+        return this.real * this.real + this.imag * this.imag;
+      }
+      magnitude() {
+        return Math.sqrt(this.magSquared());
+      }
+    }
+
+    function polar(c) {
+      const r = c.magnitude();
+      const theta = Math.atan2(c.imag, c.real);
+      return { radius: r, angle: theta };
+    }
+
+    function yuv2rgb(y, u, v) {
+      const r = y + 1.407 * u;
+      const g = y - 0.677 * u - 0.236 * v;
+      const b = y + 1.848 * v;
+      return [
+        Math.max(0, Math.min(255, Math.round(255 * r))),
+        Math.max(0, Math.min(255, Math.round(255 * g))),
+        Math.max(0, Math.min(255, Math.round(255 * b))),
+      ];
+    }
+    
+    function escapes(c) {
+      let z = new Complex(0, 0);0
+      for (let n = 0; n < maxEscapeIters; n++) {
+        if (z.magSquared() > 65536) {
+          return { escape: true, distance: 0 };
+        }
+        z = z.mul(z).add(c);
+      }
+      return { escape: false };
+    }
+
+
+    function bfor(p, c) {
+      let z = c;
+      for (let iter = 0; iter < maxNewtonIters; iter++) {
+        const fz = z.mul(z).add(c).mul(z).add(c); // Adjust for desired `F_p` equation.
+        const dfz = new Complex(2, 0).mul(z).add(new Complex(1, 0));
+        const nextZ = z.add(fz.mul(new Complex(-1, 0)).mul(dfz));
+        if (nextZ.sub(z).magSquared() < epsSquared) {
+          return nextZ;
+        }
+        z = nextZ;
+      }
+      return null;
+    }
+
+    function renderLine(y) {
+      const imageData = ctx.createImageData(width, 1);
+      const row = imageData.data;
+      const cy = (y - height / 2) / (height / 4);
+      for (let x = 0; x < width; x++) {
+        const cx = (x - width / 2) / (width / 4);
+        const c = new Complex(cx, cy);
+
+        const escapeResult = escapes(c);
+        if (escapeResult.escape) {
+          const distance = escapeResult.distance;
+          const color = yuv2rgb(1 - distance / 4, 0, 0);
+          row[x * 4] = color[0];
+          row[x * 4 + 1] = color[1];
+          row[x * 4 + 2] = color[2];
+          row[x * 4 + 3] = 255;
+        } else {
+          const point = bfor(1, c); // Using period 1 for demonstration.
+          if (point) {
+            const { radius, angle } = polar(point);
+            const hue = angle;
+            const saturation = radius;
+            const color = yuv2rgb(saturation, Math.cos(hue), Math.sin(hue));
+            /*row[x * 4] = color[0];
+            row[x * 4 + 1] = color[1];
+            row[x * 4 + 2] = color[2];
+            row[x * 4 + 3] = 255;*/
+            
+             row[x * 4] = 255;
+            row[x * 4 + 1] =0;
+            row[x * 4 + 2] =0;
+            row[x * 4 + 3] = 255;
+            
+          } else {
+            row[x * 4] = 0;
+            row[x * 4 + 1] = 0;
+            row[x * 4 + 2] = 0;
+            row[x * 4 + 3] = 255;
+          }
+        }
+      }
+      ctx.putImageData(imageData, 0, y);
+    }
+
+    let currentLine = 0;
+
+    function animate() {
+      if (currentLine < height) {
+        renderLine(currentLine++);
+        requestAnimationFrame(animate);
+      }
+    }
+
+    animate();
+  </script>
+</body>
+</html>

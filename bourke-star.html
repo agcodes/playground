@@ -1,0 +1,77 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Star Simulation</title>
+  <style>
+    canvas {
+      display: block;
+      margin: 0 auto;
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">Star Simulation</h1>
+  <canvas id="simulationCanvas" width="600" height="600"></canvas>
+  <a href="https://paulbourke.net/fractals/star/">source</a>
+
+  <script>
+    const NX = 600;
+    const NY = 600;
+    const N = 2000000; // Reduced for browser performance
+    const SCALE = NX / 7;
+    const m = 5; // Example value, modify as needed
+
+    const canvas = document.getElementById('simulationCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Initialize variables
+    let x = 1, y = 1;
+    const a = [];
+    const b = [];
+
+    // Precompute values
+    for (let i = 0; i < m; i++) {
+      a[2 * i] = Math.cos(2 * Math.PI * (i + 1) / m);
+      b[2 * i] = Math.sin(2 * Math.PI * (i + 1) / m);
+
+      a[2 * i + 1] = 0.5 * (Math.cos(2 * Math.PI * (i + 1) / m) + Math.cos(2 * Math.PI * i / m));
+      b[2 * i + 1] = 0.5 * (Math.sin(2 * Math.PI * (i + 1) / m) + Math.sin(2 * Math.PI * i / m));
+    }
+
+    // Draw simulation
+    function drawSimulation() {
+      for (let n = 0; n < N; n++) {
+        const c = Math.floor(Math.random() * (2 * m));
+        const x1 = (x / (x * x + y * y)) / 3 + a[c];
+        const y1 = (-y / (x * x + y * y)) / 3 + b[c];
+
+        x = x1 / (x1 * x1 + y1 * y1);
+        y = y1 / (x1 * x1 + y1 * y1);
+
+        //if (n < 100) continue;
+
+        const ix = Math.round(x * SCALE + NX / 2);
+        const iy = Math.round(y * SCALE + NY / 2);
+
+        // Draw pixel
+        ctx.fillStyle = 'black';
+        ctx.fillRect(ix, iy, 1, 1);
+      }
+    }
+
+    // Clear canvas and start the simulation
+    function startSimulation() {
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, NX, NY); // Clear with white
+      drawSimulation();
+    }
+
+    startSimulation();
+  </script>
+</body>
+</html>

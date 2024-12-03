@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mandelbrot Set Animation</title>
+</head>
+<body>
+  <canvas id="mandelbrotCanvas" width="400" height="400"></canvas>
+  <script>
+    // Define constants
+    const IMGSIZ = 400; // Canvas size
+    const MAXITR = 200; // Maximum iterations
+    const MAXZSQ = 4.0; // Maximum |z|^2
+    const NUMFRM = 100; // Total frames
+    const R = 1; // Red multiplier
+    const G = 1; // Green multiplier
+    const B = 1; // Blue multiplier
+    let currentFrame = 90; // Current frame for lp calculations
+    let currentY = 0; // Current row being drawn
+    let canvas = document.getElementById('mandelbrotCanvas');
+    let ctx = canvas.getContext('2d');
+
+    // Function to calculate lp value
+    function lp(z, n) {
+      let lpv = { real: 0.0, imag: 0.0 };
+      for (let i = 0; i < n; i++) {
+        lpv = {
+          real: lpv.real * lpv.real - lpv.imag * lpv.imag + z.real,
+          imag: 2 * lpv.real * lpv.imag + z.imag
+        };
+      }
+      return Math.sqrt(lpv.real * lpv.real + lpv.imag * lpv.imag) - 2;
+    }
+
+    // Function to draw Mandelbrot set row by row
+    function drawMandelbrot() {
+      console.log(`Drawing row ${currentY} for frame ${currentFrame}`);
+      for (let x = 0; x < IMGSIZ; x++) {
+        let c = {
+          real: -2.2 + (x / IMGSIZ) * (0.8 - (-2.2)),
+          imag: -1.5 + (currentY / IMGSIZ) * (1.5 - (-1.5))
+        };
+        let z = { real: 0.0, imag: 0.0 };
+        let minDval = Math.sqrt(Math.pow(canvas.width, 2) + Math.pow(canvas.height, 2)); // Initial value for minDval
+        let minDsgn = 0;
+        let count = 0;
+        while ((z.real * z.real + z.imag * z.imag) < MAXZSQ && count <= MAXITR) {
+          z = {
+            real: z.real * z.real - z.imag * z.imag + c.real,
+            imag: 2 * z.real * z.imag + c.imag
+          };
+          let ld = lp(z, currentFrame);
+          if (Math.abs(ld) < minDval) {
+            minDval = Math.abs(ld);
+            minDsgn = ld > 0 ? 1 : -1;
+          }
+          count++;
+        }
+        if (count < MAXITR) {
+          let colorRGB = [
+            (R * Math.abs((1.0 - minDval) * (1.0 - minDval))) * 255,
+            (G * Math.abs(minDval * minDval)) * 255,
+            (B * Math.abs(2.0 * (1.0 - minDval) * minDval)) * 255
+          ];
+          ctx.fillStyle = `rgb(${colorRGB[0]}, ${colorRGB[1]}, ${colorRGB[2]})`;
+          ctx.fillRect(x, currentY, 1, 1);
+        }
+      }
+
+      // Move to the next row
+      currentY++;
+      if (currentY < IMGSIZ) {
+        requestAnimationFrame(drawMandelbrot);
+      } else {
+        // If the entire frame is done, reset for the next frame
+        currentY = 0;
+        currentFrame++;
+        if (currentFrame <= NUMFRM) {
+          requestAnimationFrame(drawMandelbrot);
+        }
+      }
+    }
+
+    // Call the draw function when the page loads
+    window.onload = function () {
+      requestAnimationFrame(drawMandelbrot);
+    };
+  </script>
+</body>
+</html>

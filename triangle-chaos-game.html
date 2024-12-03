@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chaos Game with Outer Starting Points</title>
+  <style>
+    canvas {
+      display: block;
+      margin: 0 auto;
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">Chaos Game with Outer Starting Points</h1>
+  <canvas id="chaosCanvas" width="800" height="800"></canvas>
+
+  <script>
+    const canvas = document.getElementById('chaosCanvas');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Define the vertices of the triangle
+    const vertices = [
+      { x: width / 2, y: 50 },                // Top vertex
+      { x: 100, y: height - 50 },            // Bottom-left vertex
+      { x: width - 100, y: height - 50 }     // Bottom-right vertex
+    ];
+
+    // Function to draw the triangle
+    function drawTriangle() {
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(vertices[0].x, vertices[0].y);
+      ctx.lineTo(vertices[1].x, vertices[1].y);
+      ctx.lineTo(vertices[2].x, vertices[2].y);
+      ctx.closePath();
+      ctx.stroke();
+    }
+
+    // Chaos game simulation
+    function chaosGame() {
+      // Draw triangle
+      drawTriangle();
+
+      // Initialize starting points outside the triangle
+      const numStartPoints = 1000; // Number of initial points
+      const points = [];
+      for (let i = 0; i < numStartPoints; i++) {
+        // Generate random points outside the triangle
+        const x = Math.random() * width * 1.5 - width * 0.25;
+        const y = Math.random() * height * 1.5 - height * 0.25;
+        if (!isInsideTriangle({ x, y })) points.push({ x, y });
+      }
+
+      // Iterate and draw the chaos game paths
+      const steps = 500; // Number of steps per point
+      ctx.fillStyle = 'blue';
+      points.forEach(point => {
+        let { x, y } = point;
+
+        for (let step = 0; step < steps; step++) {
+          // Choose a random vertex
+          const vertex = vertices[Math.floor(Math.random() * vertices.length)];
+
+          // Move halfway towards the chosen vertex
+          x = (x + vertex.x) / 2;
+          y = (y + vertex.y) / 2;
+
+          // Draw the point
+          ctx.fillRect(x, y, 1, 1);
+        }
+      });
+    }
+
+    // Function to check if a point is inside the triangle
+    function isInsideTriangle(point) {
+      const [A, B, C] = vertices;
+      const { x, y } = point;
+
+      // Using barycentric coordinates
+      const areaOrig = Math.abs((A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y)) / 2.0);
+      const area1 = Math.abs((x * (B.y - C.y) + B.x * (C.y - y) + C.x * (y - B.y)) / 2.0);
+      const area2 = Math.abs((A.x * (y - C.y) + x * (C.y - A.y) + C.x * (A.y - y)) / 2.0);
+      const area3 = Math.abs((A.x * (B.y - y) + B.x * (y - A.y) + x * (A.y - B.y)) / 2.0);
+
+      return Math.abs(area1 + area2 + area3 - areaOrig) < 1e-6;
+    }
+
+    // Clear canvas and start the chaos game
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, width, height);
+    chaosGame();
+  </script>
+</body>
+</html>

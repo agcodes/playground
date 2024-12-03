@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hybrid Nebulabrot Fractal</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: black;
+        }
+        canvas {
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="800" height="800"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const width = canvas.width;
+        const height = canvas.height;
+
+        const maxIterations = 20000; // Number of points to sample
+        const maxPathLength = 200;  // Length of path to trace for each point
+        const escapeRadius = 4;     // Radius for escape (|z| > 2)
+        const scale = 3.0;          // Scaling factor to zoom into the fractal
+        const offsetX = -0.5;       // X-offset for centering
+        const offsetY = 0;          // Y-offset for centering
+
+        // Create an image data buffer
+        const imageData = ctx.createImageData(width, height);
+        const data = imageData.data;
+
+        // Convert canvas coordinates to complex plane coordinates
+        function toComplexPlane(x, y) {
+            return {
+                re: scale * (x / width - 0.5) + offsetX,
+                im: scale * (y / height - 0.5) + offsetY
+            };
+        }
+
+        // Apply one of the two Julia set functions at random
+        function randomJuliaFunction(z) {
+            const { re, im } = z;
+            if (Math.random() < 0.5) {
+                // Apply f1(z) = z^2 - 0.4 + 0.6i
+                return {
+                    re: re * re - im * im - 0.5,
+                    im: 1* re * im + 0.6
+                };
+            } else {
+                // Apply f2(z) = z^2 + 0.25 - 0.01i
+                return {
+                    re: re * re - im * im + 0.25,
+                    im: 2 * re * im - 0.03
+                };
+            }
+        }
+
+        // Calculate and plot the fractal
+        function generateFractal() {
+            for (let i = 0; i < maxIterations; i++) {
+                // Start from a random point in the complex plane
+                let z = toComplexPlane(Math.random() * width, Math.random() * height);
+
+                // Trace the path
+                for (let j = 0; j < maxPathLength; j++) {
+                    z = randomJuliaFunction(z);
+
+                    // Check if the point has escaped
+                    if (z.re * z.re + z.im * z.im > escapeRadius * escapeRadius) break;
+
+                    // Map the complex plane coordinates to canvas coordinates
+                    const x = Math.floor((z.re - offsetX) / scale * width + width / 2);
+                    const y = Math.floor((z.im - offsetY) / scale * height + height / 2);
+
+                    // Plot the point if it's within the canvas
+                    if (x >= 0 && x < width && y >= 0 && y < height) {
+                        const index = (y * width + x) * 4;
+                        data[index] += 1;      // Red channel
+                        data[index + 1] += 1;  // Green channel
+                        data[index + 2] += 2;  // Blue channel for a blue hue
+                    }
+                }
+            }
+
+            // Render the image
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        // Enhance colors based on intensities
+        function enhanceColors() {
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, data[i] * 2);       // Enhance red
+                data[i + 1] = Math.min(255, data[i + 1] * 12); // Enhance green
+                data[i + 2] = Math.min(255, data[i + 2] * 4); // Enhance blue
+                data[i + 3] = 255;                            // Full opacity
+            }
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        // Run the fractal generation
+        generateFractal();
+        enhanceColors();
+    </script>
+</body>
+</html>

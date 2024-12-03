@@ -14,6 +14,7 @@
         const width = canvas.width = 800;
         const height = canvas.height = 800;
 
+        // Golden Ratio constant
         const phi = (1 + Math.sqrt(5)) / 2;
 
         // Complex number class
@@ -45,15 +46,15 @@
             const absZ = z.abs();
             const argZ = z.arg();
             const r = Math.log(absZ) / (4 * Math.log(phi)) - argZ / (2 * Math.PI);
-            return 18 * Math.abs(r - Math.round(r));
+            return 6 * Math.abs(r - Math.round(r));
         }
 
         // OrbitTrap coloring function
         function orbitTrap(c) {
-            let z = new Complex(0, 0);
+             let z = new Complex(0, 0);
             let i = 0;
-
-            while (i < 1000 && z.abs() < 100 && (i < 2 || f(z) > 1)) {
+            let maxIterations = 100;
+            while (i < maxIterations && z.abs() < 10 && (i < 2 || f(z) > 0.05)) {
                 z = z.square().add(c);
                 i++;
             }
@@ -62,22 +63,38 @@
             const trap = f(z);
             const saturation = Math.min(1, 2 * trap);
             const brightness = Math.max(0, Math.min(1, 2 * (1 - trap)));
-
-            return `hsl(${hue * 360}, ${saturation * 100}%, ${brightness * 50}%)`;
+            
+            if (i == maxIterations){
+            
+                return `hsl(${hue * 100}, ${saturation * 100}%, ${brightness * 50}%)`;
+            }
+            else {
+                return `hsl(${200+hue * 200}, ${50}%, ${brightness * 50}%)`;
+            }
         }
+
+        // Define the region of the complex plane to visualize
+        const xmin = -2.4;
+        const xmax = 1.2;
+        const ymin = -1.6;
+        const ymax = 1.6;
 
         // Drawing one line of the orbit trap
         function drawLine(y) {
-            const scaleX = 3 / width; // Horizontal scaling
-            const scaleY = 3 / height; // Vertical scaling
+            const scaleX = (xmax - xmin) / width; // Horizontal scaling based on xmin, xmax
+            const scaleY = (ymax - ymin) / height; // Vertical scaling based on ymin, ymax
 
             for (let x = 0; x < width; x++) {
-                const xc = -2 + x * scaleX;
-                const yc = -1.5 + y * scaleY;
+                const xc = xmin + x * scaleX;  // Map pixel to complex plane (x)
+                const yc = ymin + y * scaleY;  // Map pixel to complex plane (y)
                 const color = orbitTrap(new Complex(xc, yc));
-
-                ctx.fillStyle = color;
-                ctx.fillRect(x, y, 1, 1);
+  
+                if (color){
+                
+                
+                  ctx.fillStyle = color;
+                  ctx.fillRect(x, y, 1, 1);
+                }
             }
         }
 

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamming Weight Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        .bit-row {
+            display: flex;
+            gap: 5px;
+        }
+        .bit {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            text-align: center;
+            line-height: 20px;
+            border: 1px solid #333;
+            font-weight: bold;
+            font-size: 14px;
+            color: #fff;
+        }
+        .on { background-color: green; }
+        .off { background-color: gray; }
+    </style>
+</head>
+<body>
+
+    <h1>Hamming Weight of (x AND y)</h1>
+    
+    <label for="x-input">Enter x:</label>
+    <input type="number" id="x-input" value="5">
+    
+    <label for="y-input">Enter y:</label>
+    <input type="number" id="y-input" value="3">
+
+    <button onclick="calculateHammingWeight()">Calculate Hamming Weight</button>
+
+    <h2>Binary Representation</h2>
+    <div id="binary-output"></div>
+
+    <h2>Hamming Weight: <span id="hamming-weight">0</span></h2>
+
+    <script>
+        function signMagnitudeBinary(num) {
+            if (num === 0) return '0';
+            let binary = Math.abs(num).toString(2);
+            const bitLength = 8; // Set the fixed bit-length (e.g., 8 bits)
+            binary = binary.padStart(bitLength - 1, '0'); 
+            return (num < 0 ? '1' : '0') + binary;
+        }
+
+        function calculateHammingWeight() {
+            const x = parseInt(document.getElementById('x-input').value);
+            const y = parseInt(document.getElementById('y-input').value);
+
+            const xBinary = signMagnitudeBinary(x);
+            const yBinary = signMagnitudeBinary(y);
+
+            // Perform bitwise AND and find shared 'on' bits
+            const andResult = (Math.abs(x) & Math.abs(y)).toString(2).padStart(8, '0');
+            const sharedOnBits = [...andResult].filter((bit, i) => bit === '1' && xBinary[i] === '1' && yBinary[i] === '1').length;
+
+            // Display results
+            displayBinaryOutput(xBinary, yBinary, andResult);
+            document.getElementById('hamming-weight').textContent = sharedOnBits;
+        }
+
+        function displayBinaryOutput(xBinary, yBinary, andBinary) {
+            const binaryOutput = document.getElementById('binary-output');
+            binaryOutput.innerHTML = '';
+
+            const rows = [
+                { label: 'x', binary: xBinary },
+                { label: 'y', binary: yBinary },
+                { label: 'x AND y', binary: andBinary }
+            ];
+
+            rows.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'bit-row';
+                
+                // Add label
+                const labelDiv = document.createElement('div');
+                labelDiv.textContent = row.label + ':';
+                rowDiv.appendChild(labelDiv);
+
+                // Add binary bits with styling
+                [...row.binary].forEach(bit => {
+                    const bitDiv = document.createElement('div');
+                    bitDiv.className = 'bit ' + (bit === '1' ? 'on' : 'off');
+                    bitDiv.textContent = bit;
+                    rowDiv.appendChild(bitDiv);
+                });
+
+                binaryOutput.appendChild(rowDiv);
+            });
+        }
+
+        // Initial calculation
+        calculateHammingWeight();
+    </script>
+
+</body>
+</html>
