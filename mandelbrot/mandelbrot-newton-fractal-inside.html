@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mandelbrot x Newton fractal</title>
+  <style>
+    canvas { display: block; margin: auto; background: black; }
+  </style>
+</head>
+<body>
+  <p>
+    Drawing points inside the Mandelbrot set using the Newton fractal method.</p>
+  <canvas id="mandelbrotCanvas" width="800" height="800"></canvas>
+  <script>
+    const canvas = document.getElementById('mandelbrotCanvas');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const maxEscapeIters = 150;
+    const maxNewtonIters = 100;
+    const limit =  0.01;
+
+    class Complex {
+      constructor(r, i) {
+        this.r = r;
+        this.i = i;
+      }
+      sub(c) { 
+        return new Complex(
+          this.r - c.r, 
+          this.i - c.i
+        ); 
+      }
+      add(c) { 
+        return new Complex(
+          this.r + c.r, 
+          this.i + c.i
+        ); 
+      }
+      mul(z) {
+        return new Complex(
+         this.r * z.r - this.i * z.i,
+         this.i * z.r + this.r * z.i,
+        );
+      }
+      pow(){
+        return new Complex(
+            // r2 – i2
+            this.r * this.r - this.i * this.i,
+            // (2ri)
+            2 * this.r * this.i
+        );
+      }
+      magSquared() {
+        return this.r * this.r + this.i * this.i;
+      }
+      magnitude() {
+        return Math.sqrt(this.magSquared());
+      }
+      argument() {
+		return Math.atan2(this.i, this.r);
+      }
+      div(z) {
+		const denominator = z.r * z.r + z.i * z.i;
+		return new Complex(
+			(this.r * z.r + this.i * z.i) / denominator,
+			(this.i * z.r - this.r * z.i) / denominator,
+		);
+      }
+    }
+    
+    function escapes(c) {
+      let z = new Complex(0, 0);
+      let it = 0;
+      for (let n = 0; n < maxEscapeIters; n++) {
+        if (z.magSquared() > 2) {
+          return { escape: true, it:n, z:z };
+        }
+        z = z.mul(z).add(c);
+        it = n;
+      }
+      return { escape: false, it:it, z:z };
+    }
+
+
+    function newtonEscape(c) {
+      let z = c;
+      let eps = 0;
+      let i = 0;
+      do {
+        const nextZ = z.sub(
+                // z2-c
+				((z.pow().sub(new Complex(1,0))).div((
+                    // derivative of z2-c
+					z.mul(new Complex(2,0))
+				)))
+			).add(new Complex(1,0));
+			
+        eps = Math.abs(nextZ.sub(z).r);
+        z = nextZ;
+        i++;
+      }
+      while (eps > limit && i < maxNewtonIters);
+      
+      return z;
+    }
+    
+    const xmin = -2;
+    const xmax = 0.9;
+    const ymin = -1.3;
+    const ymax = 1.3;
+        
+        
+    function renderLine(y) {
+      const imageData = ctx.createImageData(width, 1);
+      const row = imageData.data;
+      const cy = (y - height / 2) / (height / 4);
+      
+      const scaleX = (xmax - xmin) / width; // Horizontal scaling based on xmin, xmax
+      const scaleY = (ymax - ymin) / height; // Vertical scaling based on ymin, ymax
+            
+      for (let x = 0; x < width; x++) {
+        const xc = xmin + x * scaleX;  // Map pixel to complex plane (x)
+        const yc = ymin + y * scaleY;  // Map pixel to complex plane (y)
+                
+        const c = new Complex(xc, yc);
+
+        const escapeResult = escapes(c);
+        if (escapeResult.escape) {
+          const color = hslToRgb([250, 50, escapeResult.it*4]);
+          row[x * 4] = color[0];
+          row[x * 4 + 1] = color[1];
+          row[x * 4 + 2] = color[2];
+          row[x * 4 + 3] = 255;
+        } else {
+          const point = newtonEscape(escapeResult.z);
+          if (point) {
+      
+          const hue = (((point.argument() / (2 * Math.PI) + 1)) % 1);
+        
+           const rgb = hslToRgb([320+hue*300, 50, 50]);
+            row[x * 4] = rgb[0];
+            row[x * 4 + 1] = rgb[1];
+            row[x * 4 + 2] = rgb[2];
+            row[x * 4 + 3] = 255;
+          } else {
+            row[x * 4] = 0;
+            row[x * 4 + 1] = 0;
+            row[x * 4 + 2] = 0;
+            row[x * 4 + 3] = 255;
+          }
+        }
+      }
+      ctx.putImageData(imageData, 0, y);
+    }
+
+    let currentLine = 0;
+
+    function animate() {
+      if (currentLine < height) {
+        renderLine(currentLine++);
+        requestAnimationFrame(animate);
+      }
+    }
+
+    function hslToRgb(hsl) {
+		if (hsl === null) {
+			return null;
+		}
+
+		let r, g, b, m, c, x;
+		let h = parseInt(hsl[0], 10);
+		if (h < 0) {
+			h = h * -1;
+		}
+
+		if (h > 360) {
+			h = Math.floor(h % 360) + 1;
+		}
+
+		let s = parseInt(hsl[1], 10);
+		let l = parseInt(hsl[2], 10);
+
+		if (!isFinite(h)) h = 0;
+		if (!isFinite(s)) s = 0;
+		if (!isFinite(l)) l = 0;
+
+		h /= 60;
+		if (h < 0) {
+			h = 6 - (-h % 6);
+		}
+
+		h %= 6;
+
+		s = Math.max(0, Math.min(1, s / 100));
+		l = Math.max(0, Math.min(1, l / 100));
+
+		c = (1 - Math.abs((2 * l) - 1)) * s;
+		x = c * (1 - Math.abs((h % 2) - 1));
+
+		if (h < 1) {
+			r = c;
+			g = x;
+			b = 0;
+		} else if (h < 2) {
+			r = x;
+			g = c;
+			b = 0;
+		} else if (h < 3) {
+			r = 0;
+			g = c;
+			b = x;
+		} else if (h < 4) {
+			r = 0;
+			g = x;
+			b = c;
+		} else if (h < 5) {
+			r = x;
+			g = 0;
+			b = c;
+		} else {
+			r = c;
+			g = 0;
+			b = x;
+		}
+
+		m = l - c / 2;
+		r = Math.round((r + m) * 255);
+		g = Math.round((g + m) * 255);
+		b = Math.round((b + m) * 255);
+
+		if (hsl.length >= 4 && typeof hsl[3] === "number" && hsl[3] !== Infinity) {
+			if (hsl[3] > 100) {
+				hsl[3] = 100;
+			}
+			if (hsl[3] < 0) {
+				hsl[3] = 0;
+			}
+			return [r, g, b, hsl[3] * 255 / 100];
+		}
+
+		return [r, g, b];
+	}
+	
+    animate();
+  </script>
+</body>
+</html>
