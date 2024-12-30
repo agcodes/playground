@@ -8,15 +8,7 @@
 <body>
     <canvas id="orbitTrapCanvas" width="800" height="800"></canvas>
     <script>
-        const canvas = document.getElementById('orbitTrapCanvas');
-        const ctx = canvas.getContext('2d');
-
-        const width = canvas.width = 800;
-        const height = canvas.height = 800;
-
-        // Golden Ratio constant
-        const phi = (1 + Math.sqrt(5)) / 2;
-
+    
         // Complex number class
         class Complex {
             constructor(real, imag) {
@@ -40,6 +32,15 @@
                 return new Complex(this.real * this.real - this.imag * this.imag, 2 * this.real * this.imag);
             }
         }
+        
+        const canvas = document.getElementById('orbitTrapCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const width = canvas.width = 800;
+        const height = canvas.height = 800;
+
+        // Golden Ratio constant
+        const phi = (1 + Math.sqrt(5)) / 2;
 
         // Function for the Golden Ratio Spiral orbit trap
         function f(z) {
@@ -112,6 +113,9 @@
 
         // Start animation
         animate();
+        
+        
+
     </script>
 </body>
 </html>

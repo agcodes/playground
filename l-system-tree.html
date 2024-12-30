@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L-System Tree</title>
+  <style>
+
+    
+  </style>
+</head>
+<body>
+  <canvas width="720" height="720" id="treeCanvas"></canvas>
+  
+    <script>
+  function setupCanvas() {
+      const canvas = document.getElementById("treeCanvas");
+      const ctx = canvas.getContext("2d");
+      const w = 720;
+      canvas.width = w;
+      canvas.height = w;
+      ctx.lineWidth = 0.5;
+
+      const N = 3;
+      let currentTree = 0;
+      function drawNextTree() {
+        if (currentTree < N) {
+          LsystemTree(ctx, w, () => {
+            currentTree++;
+            drawNextTree();
+          });
+        }
+      }
+      drawNextTree();
+    }
+
+    function LsystemTree(ctx, w, onComplete) {
+      const command = genCommand(8);
+      const distance = 1.5;
+      const angleBase = (22.5 * Math.PI) / 180;
+
+      ctx.save();
+      ctx.translate(w / 2, w);
+      ctx.rotate(Math.PI);
+
+      let index = 0;
+      function drawStep() {
+          for (let j=0;j<200;j++){
+            if (index < command.length) {
+              drawIteration(index, ctx, command, distance, angleBase);
+              index++;
+            }
+            else {
+              ctx.restore();
+              if (onComplete) onComplete();
+              break;
+            }
+          }
+        
+          if (index < command.length) {
+            requestAnimationFrame(drawStep);
+          }
+      }
+      drawStep();
+    }
+
+    function drawIteration(index, ctx, command, distance, angleBase){
+        const c = command[index];
+        const rndDist = distance + (Math.random() - 0.5) * distance * 0.5;
+          const rndAngle = (angleBase + (Math.random() - 0.5) * angleBase * 0.5) * (Math.random() < 0.5 ? -1 : 1);
+          switch (c) {
+            case "A":
+              ctx.save();
+              ctx.strokeStyle = ["#00AA00", "#008000", "#A0A000", "#80AA80"][
+                Math.floor(Math.random() * 4)
+              ];
+              ctx.beginPath();
+              ctx.moveTo(0, 0);
+              ctx.lineTo(0, rndDist * (2 + Math.random()));
+              ctx.stroke();
+              ctx.restore();
+              ctx.translate(0, rndDist);
+              break;
+            case "F":
+              ctx.beginPath();
+              ctx.moveTo(0, 0);
+              ctx.lineTo(0, rndDist);
+              ctx.stroke();
+              ctx.translate(0, rndDist);
+              break;
+            case "+":
+              ctx.rotate(-rndAngle);
+              break;
+            case "-":
+              ctx.rotate(rndAngle);
+              break;
+            case "[":
+              ctx.save();
+              break;
+            case "]":
+              ctx.restore();
+              break;
+          }
+    }
+    function genCommand(repeat) {
+      let command = "A";
+      const Fgenerater = ["FF", "FF", "FF", "F"];
+      const Agenerater = [
+        "F-[[A]+A]+F[+FA]-A",
+        "F[+A]F[-A]A",
+        "F[+[FA[-A]F]][-A]FA"
+      ];
+
+      for (let i = 0; i < repeat; i++) {
+        let newCommand = "";
+        for (const k of command) {
+          if (k === "F") {
+            newCommand += Fgenerater[Math.floor(Math.random() * Fgenerater.length)];
+          } else if (k === "A") {
+            newCommand += Agenerater[Math.floor(Math.random() * Agenerater.length)];
+          } else {
+            newCommand += k;
+          }
+        }
+        command = newCommand;
+      }
+      return command;
+    }
+
+    setupCanvas();
+  </script>
+</body>
+</html>

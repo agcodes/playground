@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Five Point Attractors IFS</title>
     <style>
+    body, canvas {
+  background:black;
+}
         canvas {
             display: block;
             margin: 25px auto 25px auto;
@@ -20,7 +23,8 @@
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        
+           ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, 800, 800);
         const NX = 800;    // Canvas widths
         const NY = 600;    // Canvas height
         const N = 500000;  // Number of iterations

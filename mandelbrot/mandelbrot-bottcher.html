@@ -12,65 +12,78 @@
     </style>
 </head>
 <body>
-    <canvas id="mandelbrotCanvas" width="1000" height="1000"></canvas>
+    <canvas id="mandelbrotCanvas" width="1900" height="1000"></canvas>
 
     <script>
-        const canvas = document.getElementById('mandelbrotCanvas');
-        const ctx = canvas.getContext('2d');
+const canvas = document.getElementById("mandelbrotCanvas");
+const ctx = canvas.getContext("2d");
+ctx.fillStyle = "white"; // Définit la couleur de remplissage
+ctx.fillRect(0, 0, 1900, 1000); // Dessine un rectangle plein
 
-        // Set canvas dimensions
-        const width = 400;
-        const height = 400;
+// Set canvas dimensions
+const width = 175;
+const height = 200;
 
-        // Function to map Böttcher coordinates to canvas coordinates
-        function mapToCanvas(x, y) {
-            const centerX = width / 2;
-            const centerY = height / 2;
-            const radius = Math.min(width, height) / 2;
+// Function to map Böttcher coordinates to canvas coordinates
+function mapToCanvas(x, y) {
+  const centerX = width * 3;
+  const centerY = height / 4;
+  const radius = Math.min(width, height) / 2;
 
-            const u = x / (1 - Math.sqrt(x * x + y * y));
-            const v = y / (1 - Math.sqrt(x * x + y * y));
+  const u = x / (1 - Math.sqrt(x * x + y * y) / 1.1);
+  const v = y / (1 - Math.sqrt(x * x + y * y) / 1.1);
 
-            const canvasX = centerX + u * radius;
-            const canvasY = centerY - v * radius; // Note: Inverting y-coordinate to match canvas coordinate system
+  const canvasX = centerX + u * radius;
+  const canvasY = centerY - v * radius;
+  // Note: Inverting y-coordinate to match canvas coordinate system
 
-            return { x: canvasX/2+width*1.5, y: canvasY/2+height };
-        }
+  return {
+    x: canvasX / 2 + width + width * 2.5,
+    y: canvasY / 2 + height * 2.5
+  };
+}
 
-        // Function to check if a point is in the Mandelbrot set
-        function isInMandelbrotSet(cx, cy, maxIterations) {
-            let x = 0;
-            let y = 0;
-            let iteration = 0;
-            while (x * x + y * y <= 4 && iteration < maxIterations) {
-                const xTemp = x * x - y * y + cx;
-                y = 2 * x * y + cy;
-                x = xTemp;
-                iteration++;
-            }
-            return iteration === maxIterations;
-        }
+// Function to check if a point is in the Mandelbrot set
+function isInMandelbrotSet(cx, cy, maxIterations) {
+  let x = 0;
+  let y = 0;
+  let iteration = 0;
+  while (x * x + y * y <= 4 && iteration < maxIterations) {
+    const xTemp = x * x - y * y + cx;
+    y = 2 * x * y + cy;
+    x = xTemp;
+    iteration++;
+  }
+  return iteration;
+}
 
-        // Draw Mandelbrot set using Böttcher coordinates
-        function drawMandelbrot() {
-            const maxIterations = 100;
-            const scale = 2;
+// Draw Mandelbrot set using Böttcher coordinates
+function drawMandelbrot() {
+  const maxIterations = 500;
+  const scale = 4;
 
-            for (let i = 0; i < width; i++) {
-                for (let j = 0; j < height; j++) {
-                    const x = (i - width / 2) / (Math.min(width, height) / 2);
-                    const y = (height / 2 - j) / (Math.min(width, height) / 2); // Invert y-coordinate to match Böttcher coordinate system
+  for (let i = 0; i < width; i++) {
+    for (let j = 0; j < height; j++) {
+      const x = (i - width / 2) / (Math.min(width, height) / 2);
+      const y = (height / 2 - j) / (Math.min(width, height) / 2);
+      // Invert y-coordinate to match Böttcher coordinate system
+      const it = isInMandelbrotSet(x, y, maxIterations);
+      if (it == maxIterations) {
+        const mappedCoords = mapToCanvas(x, y);
+        ctx.fillStyle = "black";
+        ctx.fillRect(mappedCoords.x, mappedCoords.y, scale, scale);
+      } else {
+        const mappedCoords = mapToCanvas(x, y);
+        ctx.fillStyle = `hsl(${250}, 50%, ${it*5}%)`;
+        ctx.fillRect(mappedCoords.x, mappedCoords.y, scale, scale);
+      }
+    }
+  }
+}
 
-                    if (isInMandelbrotSet(x, y, maxIterations)) {
-                        const mappedCoords = mapToCanvas(x, y);
-                        ctx.fillStyle = 'black';
-                        ctx.fillRect(mappedCoords.x, mappedCoords.y, scale, scale);
-                    }
-                }
-            }
-        }
+drawMandelbrot();
 
-        drawMandelbrot();
+
     </script>
 </body>
 </html>
