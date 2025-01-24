@@ -6,14 +6,23 @@
     <title>Mandelbrot Stalk Visualization</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        canvas { display: block; margin: auto; background: black; }
+         canvas {
+     
+      margin:0.5em;
+      box-shadow: 0 4px 5px rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      max-width:80%;
+    }
+        
+        
         body { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .input-group { margin: 10px 0; }
     </style>
 </head>
 <body>
     <div class="container text-center">
-        <h1 class="mb-4">Mandelbrot Stalk Visualization</h1>
+        
+        <h1 class="m-4">Mandelbrot Stalk Visualization</h1>
         <canvas width="700" height="700" id="fractalCanvas"></canvas>
         <div class="input-group">
             <input type="number" id="transX" class="form-control" placeholder="Transform X" value="0" step="0.01">

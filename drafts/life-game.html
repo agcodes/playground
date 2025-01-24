@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conway's Game of Life</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            display: block;
+            margin: 20px auto;
+        }
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Conway's Game of Life</h1>
+    <canvas id="gameCanvas"></canvas>
+    <br>
+    <button id="startButton">Start</button>
+    <button id="stopButton">Stop</button>
+    <button id="clearButton">Clear</button>
+    <button id="randomButton">Randomize</button>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const cellSize = 10; // Size of each cell in pixels
+        const rows = 50; // Number of rows
+        const cols = 50; // Number of columns
+        let grid = createGrid();
+        let running = false;
+        let animationFrame;
+
+        // Set canvas size
+        canvas.width = cols * cellSize;
+        canvas.height = rows * cellSize;
+
+        // Create an empty grid
+        function createGrid() {
+            const grid = [];
+            for (let y = 0; y < rows; y++) {
+                const row = [];
+                for (let x = 0; x < cols; x++) {
+                    row.push(0); // All cells start as dead (0)
+                }
+                grid.push(row);
+            }
+            return grid;
+        }
+
+        // Draw the grid
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    ctx.fillStyle = grid[y][x] ? 'black' : 'white';
+                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+
+        // Compute the next generation
+        function nextGeneration() {
+            const newGrid = createGrid();
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const neighbors = countNeighbors(x, y);
+                    if (grid[y][x] === 1) {
+                        newGrid[y][x] = neighbors === 2 || neighbors === 3 ? 1 : 0;
+                    } else {
+                        newGrid[y][x] = neighbors === 3 ? 1 : 0;
+                    }
+                }
+            }
+            grid = newGrid;
+        }
+
+        // Count live neighbors
+        function countNeighbors(x, y) {
+            let count = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    if (dx === 0 && dy === 0) continue;
+                    const nx = (x + dx + cols) % cols;
+                    const ny = (y + dy + rows) % rows;
+                    count += grid[ny][nx];
+                }
+            }
+            return count;
+        }
+
+        // Start the simulation
+        function start() {
+            if (!running) {
+                running = true;
+                animate();
+            }
+        }
+
+        // Stop the simulation
+        function stop() {
+            running = false;
+            cancelAnimationFrame(animationFrame);
+        }
+
+        // Clear the grid
+        function clearGrid() {
+            grid = createGrid();
+            drawGrid();
+        }
+
+        // Randomize the grid
+        function randomizeGrid() {
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    grid[y][x] = Math.random() > 0.8 ? 1 : 0;
+                }
+            }
+            drawGrid();
+        }
+
+        // Animation loop
+        function animate() {
+            if (running) {
+                nextGeneration();
+                drawGrid();
+                animationFrame = requestAnimationFrame(animate);
+            }
+        }
+
+        // Event listeners for buttons
+        document.getElementById('startButton').addEventListener('click', start);
+        document.getElementById('stopButton').addEventListener('click', stop);
+        document.getElementById('clearButton').addEventListener('click', clearGrid);
+        document.getElementById('randomButton').addEventListener('click', randomizeGrid);
+
+        // Initialize the grid
+        drawGrid();
+    </script>
+</body>
+</html>

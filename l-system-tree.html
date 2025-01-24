@@ -3,26 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>L-System Tree</title>
+  <title>Zen Nature - L-System Tree</title>
   <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
 
-    
+    canvas {
+      display: block;
+      margin:1em;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      max-width:90%;
+    }
   </style>
 </head>
 <body>
   <canvas width="720" height="720" id="treeCanvas"></canvas>
   
-    <script>
-  function setupCanvas() {
+  <script>
+    function setupCanvas() {
       const canvas = document.getElementById("treeCanvas");
       const ctx = canvas.getContext("2d");
-      const w = 720;
-      canvas.width = w;
-      canvas.height = w;
+      const w = canvas.width;
       ctx.lineWidth = 0.5;
 
-      const N = 3;
+      const N = 3; // Number of trees
       let currentTree = 0;
+
       function drawNextTree() {
         if (currentTree < N) {
           LsystemTree(ctx, w, () => {
@@ -31,6 +45,7 @@
           });
         }
       }
+
       drawNextTree();
     }
 
@@ -45,79 +60,84 @@
 
       let index = 0;
       function drawStep() {
-          for (let j=0;j<200;j++){
-            if (index < command.length) {
-              drawIteration(index, ctx, command, distance, angleBase);
-              index++;
-            }
-            else {
-              ctx.restore();
-              if (onComplete) onComplete();
-              break;
-            }
-          }
-        
+        for (let j = 0; j < 200; j++) {
           if (index < command.length) {
-            requestAnimationFrame(drawStep);
+            drawIteration(index, ctx, command, distance, angleBase);
+            index++;
+          } else {
+            ctx.restore();
+            if (onComplete) onComplete();
+            break;
           }
+        }
+
+        if (index < command.length) {
+          requestAnimationFrame(drawStep);
+        }
       }
       drawStep();
     }
 
-    function drawIteration(index, ctx, command, distance, angleBase){
-        const c = command[index];
-        const rndDist = distance + (Math.random() - 0.5) * distance * 0.5;
-          const rndAngle = (angleBase + (Math.random() - 0.5) * angleBase * 0.5) * (Math.random() < 0.5 ? -1 : 1);
-          switch (c) {
-            case "A":
-              ctx.save();
-              ctx.strokeStyle = ["#00AA00", "#008000", "#A0A000", "#80AA80"][
-                Math.floor(Math.random() * 4)
-              ];
-              ctx.beginPath();
-              ctx.moveTo(0, 0);
-              ctx.lineTo(0, rndDist * (2 + Math.random()));
-              ctx.stroke();
-              ctx.restore();
-              ctx.translate(0, rndDist);
-              break;
-            case "F":
-              ctx.beginPath();
-              ctx.moveTo(0, 0);
-              ctx.lineTo(0, rndDist);
-              ctx.stroke();
-              ctx.translate(0, rndDist);
-              break;
-            case "+":
-              ctx.rotate(-rndAngle);
-              break;
-            case "-":
-              ctx.rotate(rndAngle);
-              break;
-            case "[":
-              ctx.save();
-              break;
-            case "]":
-              ctx.restore();
-              break;
-          }
+    function drawIteration(index, ctx, command, distance, angleBase) {
+      const c = command[index];
+      const rndDist = distance + (Math.random() - 0.5) * distance * 0.5;
+      const rndAngle =
+        (angleBase + (Math.random() - 0.5) * angleBase * 0.5) *
+        (Math.random() < 0.5 ? -1 : 1);
+
+      switch (c) {
+        case "A":
+          ctx.save();
+          ctx.strokeStyle = ["#4CAF50", "#8BC34A", "#CDDC39", "#FFC107"][
+            Math.floor(Math.random() * 4)
+          ];
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(0, rndDist * (2 + Math.random()));
+          ctx.stroke();
+          ctx.restore();
+          ctx.translate(0, rndDist);
+          break;
+        case "F":
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(0, rndDist);
+          ctx.stroke();
+          ctx.translate(0, rndDist);
+          break;
+        case "+":
+          ctx.rotate(-rndAngle);
+          break;
+        case "-":
+          ctx.rotate(rndAngle);
+          break;
+        case "[":
+          ctx.save();
+          break;
+        case "]":
+          ctx.restore();
+          break;
+      }
     }
+
     function genCommand(repeat) {
       let command = "A";
       const Fgenerater = ["FF", "FF", "FF", "F"];
       const Agenerater = [
         "F-[[A]+A]+F[+FA]-A",
         "F[+A]F[-A]A",
-        "F[+[FA[-A]F]][-A]FA"
+        "F[+[FA[-A]F]][-A]FA",
       ];
 
       for (let i = 0; i < repeat; i++) {
         let newCommand = "";
         for (const k of command) {
           if (k === "F") {
-            newCommand += Fgenerater[Math.floor(Math.random() * Fgenerater.length)];
+            newCommand +=
+              Fgenerater[Math.floor(Math.random() * Fgenerater.length)];
           } else if (k === "A") {
-            newCommand += Agenerater[Math.floor(Math.random() * Agenerater.length)];
+            newCommand +=
+              Agenerater[Math.floor(Math.random() * Agenerater.length)];
           } else {
             newCommand += k;
           }

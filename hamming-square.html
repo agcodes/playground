@@ -4,11 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hamming Weight Visualization on Canvas</title>
+    <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    canvas {
+      display: block;
+      margin:1em;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      max-width:90%;
+    }
+    h1 {
+        text-align:center;
+    }
+  </style>
 </head>
 <body>
-    <h1>Hamming Weight of (x AND y) Visualization</h1>
-    <canvas id="canvas" width="802" height="802"></canvas>
-
+    <div class="w100">
+        <h1>Hamming Weight of (x AND y) Visualization</h1>
+        <canvas id="canvas" width="802" height="802"></canvas>
+    </div>
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ligne Horizontale Épaisse et Pixelisée</title>
+</head>
+<body>
+<canvas id="canvas" width="500" height="500" style="border:1px solid #000;"></canvas>
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Désactiver l'anti-aliasing pour un effet pixelisé
+    canvas.style.imageRendering = "pixelated";
+
+    // Fonction pour dessiner une ligne épaisse pixelisée
+    function drawBlockyLine(x0, y0, x1, y1, blockSize, color) {
+        ctx.fillStyle = color;
+
+        // Calculer les dimensions pour couvrir l'épaisseur de la ligne
+        if (y0 === y1) {
+            // Ligne horizontale
+            const minX = Math.min(x0, x1);
+            const maxX = Math.max(x0, x1);
+            for (let x = minX; x <= maxX; x += blockSize) {
+                ctx.fillRect(x, y0 - Math.floor(blockSize / 2), blockSize, blockSize);
+            }
+        } else if (x0 === x1) {
+            // Ligne verticale
+            const minY = Math.min(y0, y1);
+            const maxY = Math.max(y0, y1);
+            for (let y = minY; y <= maxY; y += blockSize) {
+                ctx.fillRect(x0 - Math.floor(blockSize / 2), y, blockSize, blockSize);
+            }
+        } else {
+            // Utiliser Bresenham pour les lignes diagonales
+            let dx = Math.abs(x1 - x0);
+            let dy = Math.abs(y1 - y0);
+            let sx = x0 < x1 ? 1 : -1;
+            let sy = y0 < y1 ? 1 : -1;
+            let err = dx - dy;
+
+            while (true) {
+                ctx.fillRect(
+                    Math.floor(x0 / blockSize) * blockSize,
+                    Math.floor(y0 / blockSize) * blockSize,
+                    blockSize,
+                    blockSize
+                );
+
+                if (x0 === x1 && y0 === y1) break;
+
+                let e2 = 2 * err;
+                if (e2 > -dy) {
+                    err -= dy;
+                    x0 += sx;
+                }
+                if (e2 < dx) {
+                    err += dx;
+                    y0 += sy;
+                }
+            }
+        }
+    }
+
+    // Exemple d'utilisation
+    drawBlockyLine(50, 200, 300, 200, 6, "red");    // Ligne horizontale rouge
+    drawBlockyLine(100, 100, 400, 100, 10, "blue"); // Ligne horizontale bleue
+    drawBlockyLine(250, 50, 250, 300, 8, "green");  // Ligne verticale verte
+</script>
+</body>
+</html>
