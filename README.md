@@ -1,1 +1,2 @@
-Just some tests
+This is not an application.
+

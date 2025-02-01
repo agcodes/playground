@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liar 4 Fractal</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+    }
+    canvas {
+      border: 1px solid black;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Liar 4 Fractal</h1>
+  <canvas id="fractalCanvas" width="400" height="400"></canvas>
+  <p>Adjust parameters in the code to see different variations.</p>
+
+  <script>
+    const canvas = document.getElementById('fractalCanvas');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Parameters
+    const maxIterations = 200; // Maximum number of iterations
+    const bailout = 100;         // Bailout value
+    const pNorm = 1;           // Norm parameter (1, 2, or 4)
+    const scale = { real: 1, imag: 1 }; // Scaling factors
+    const offsetX = 0;      // Horizontal shift
+    const offsetY = 0;         // Vertical shift
+
+    // Function to calculate the p-norm
+    function pNormModulus(x, y, p) {
+      return Math.pow(Math.abs(x) ** p + Math.abs(y) ** p, 1 / p);
+    }
+
+    // Function to compute the fractal and draw pixels
+    function drawFractal() {
+      const imageData = ctx.createImageData(width, height);
+      const pixels = imageData.data;
+
+      for (let px = 0; px < width; px++) {
+        for (let py = 0; py < height; py++) {
+          // Map pixel (px, py) to the complex plane
+          const x0 = (px - width / 2) / (width / 4) + offsetX;
+          const y0 = (py - height / 2) / (height / 4) + offsetY;
+
+          // Initial conditions
+          let zx = 0;
+          let zy = 0;
+          let iteration = 0;
+
+          // Iteration loop
+          while (iteration < maxIterations) {
+            // Liar 4 formula
+            const tempZx = 1 - Math.abs(zy - zx);
+            const tempZy = 1 - Math.abs(1 - zx - zy);
+
+            const newZx = tempZx * scale.real - tempZy * scale.imag + x0;
+            const newZy = tempZy * scale.real + tempZx * scale.imag + y0;
+
+            zx = newZx;
+            zy = newZy;
+
+            // Check bailout condition using p-norm
+            if (pNormModulus(zx, zy, pNorm) > bailout) break;
+
+            iteration++;
+          }
+
+          // Color pixel based on iteration count
+          const color = iteration === maxIterations ? 0 : 255 - (iteration * 10* 255) / maxIterations;
+
+          const pixelIndex = (py * width + px) * 4;
+          pixels[pixelIndex] = color;       // Red
+          pixels[pixelIndex + 1] = color;  // Green
+          pixels[pixelIndex + 2] = color;  // Blue
+          pixels[pixelIndex + 3] = 255;    // Alpha
+        }
+      }
+
+      // Draw the image on the canvas
+      ctx.putImageData(imageData, 0, 0);
+    }
+
+    // Draw the fractal when the page loads
+    drawFractal();
+  </script>
+</body>
+</html>

@@ -44,6 +44,11 @@
     let canvas = document.getElementById('mandelbrotCanvas');
     let ctx = canvas.getContext('2d');
 
+    // Clear the canvas and set background
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "rgb(0, 0, 0)"; // black background
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
     // Function to calculate lp value
     function lp(z, n) {
       let lpv = { real: 0.0, imag: 0.0 };
@@ -87,7 +92,7 @@
             (B * Math.abs(2.0 * (1.0 - minDval) * minDval)) * 255
           ];
           ctx.fillStyle = `rgb(${colorRGB[0]}, ${colorRGB[1]}, ${colorRGB[2]})`;
-          ctx.fillRect(x, currentY, 1, 1);
+          ctx.fillRect(currentY, x, 1, 1);
         }
       }
 
