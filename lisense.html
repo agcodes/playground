@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiSense - See Beyond</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header img {
+            width: 150px;
+            margin-bottom: 20px;
+        }
+
+        .baseline {
+            position: relative;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .baseline img {
+            width: 100%;
+            max-width: 800px;
+            opacity: 0.5;
+        }
+
+        .baseline h2 {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+        }
+
+        .content {
+            max-width: 800px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .content p {
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+
+        .form {
+            max-width: 600px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        .form input, .form textarea, .form button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background-color: #1f1f1f;
+            color: #e0e0e0;
+            font-size: 1em;
+        }
+
+        .form button {
+            background-color: #00ffff;
+            color: #121212;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .form button:hover {
+            background-color: #00ccff;
+        }
+
+        .references {
+            text-align: center;
+        }
+
+        .references h3 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #00ffff;
+        }
+
+        .references ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .references ul li {
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+
+        .glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.3), transparent);
+            animation: glow 3s infinite;
+        }
+
+        @keyframes glow {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0.5;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(0.7);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="https://via.placeholder.com/150" alt="LiSense Logo">
+    </div>
+
+    <div class="baseline">
+        <img src="https://via.placeholder.com/800x300" alt="Background Illustration">
+        <h2>See Beyond</h2>
+        <div class="glow" style="top: 30%; left: 20%;"></div>
+        <div class="glow" style="top: 60%; left: 70%;"></div>
+    </div>
+
+    <div class="content">
+        <p>
+            LiSense specializes in designing advanced lidar technology for industrial applications. Our lidar systems provide precise and reliable 3D mapping, enabling enhanced automation, improved safety, and increased efficiency in various industrial environments. From autonomous vehicles to robotics, our solutions help industries see beyond traditional limitations.
+        </p>
+    </div>
+
+    <div class="form">
+        <form>
+            <input type="text" placeholder="Your Name" required>
+            <input type="email" placeholder="Your Email" required>
+            <textarea placeholder="Your Message" rows="5" required></textarea>
+            <button type="submit">Send Message</button>
+        </form>
+    </div>
+
+    <div class="references">
+        <h3>Industry References</h3>
+        <ul>
+            <li>TechInnovate Solutions</li>
+            <li>AutoMate Industries</li>
+            <li>RoboTech Systems</li>
+            <li>FutureDrive Automotive</li>
+        </ul>
+    </div>
+</body>
+</html>

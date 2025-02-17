@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lidinoid Surface Visualization with Three.js</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <!-- Add Three.js and your own script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Set up the scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Create a function for the Lidinoid surface
+        function lidinoidParametric(u, v) {
+            // Parametric equations for the Lidinoid surface
+            const x = Math.sin(2 * u) * Math.cos(v) + Math.sin(2 * v) * Math.cos(u);
+            const y = Math.sin(2 * u) * Math.sin(v) + Math.sin(2 * v) * Math.sin(u);
+            const z = Math.cos(2 * u) * Math.cos(2 * v);
+            return { x, y, z };
+        }
+
+        // Function to generate Lidinoid points
+        function generateLidinoidPoints(gridSize = 50, threshold = 0.05) {
+            let points = [];
+            for (let u = 0; u <= Math.PI; u += Math.PI / gridSize) {
+                for (let v = 0; v <= 2 * Math.PI; v += Math.PI / gridSize) {
+                    const { x, y, z } = lidinoidParametric(u, v);
+                    points.push(new THREE.Vector3(x, y, z));
+                }
+            }
+            return points;
+        }
+
+        // Generate points for the Lidinoid surface
+        const points = generateLidinoidPoints(50);
+
+        // Create a geometry from the points
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+        // Create a material for the points
+        const material = new THREE.PointsMaterial({ color: 0x00ff00, size: 0.1 });
+
+        // Create the points object
+        const pointsObject = new THREE.Points(geometry, material);
+        scene.add(pointsObject);
+
+        // Set up the camera position
+        camera.position.z = 5;
+
+        // Create an animate function to render the scene
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate the surface for better visualization
+            pointsObject.rotation.x += 0.01;
+            pointsObject.rotation.y += 0.01;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Resize the renderer when the window is resized
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+    </script>
+</body>
+</html>

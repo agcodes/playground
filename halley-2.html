@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halley Fractal</title>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: black; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <canvas id="fractal"></canvas>
+    <script>
+    
+        class Complex {
+            constructor(real, imag) {
+                this.real = real;
+                this.imag = imag;
+            }
+
+            add(other) {
+                return new Complex(this.real + other.real, this.imag + other.imag);
+            }
+
+            subtract(other) {
+                return new Complex(this.real - other.real, this.imag - other.imag);
+            }
+
+            multiply(other) {
+                return new Complex(
+                    this.real * other.real - this.imag * other.imag,
+                    this.real * other.imag + this.imag * other.real
+                );
+            }
+
+            divide(other) {
+                const denom = other.real ** 2 + other.imag ** 2;
+                return new Complex(
+                    (this.real * other.real + this.imag * other.imag) / denom,
+                    (this.imag * other.real - this.real * other.imag) / denom
+                );
+            }
+
+            square() {
+                return this.multiply(this);
+            }
+
+            cube() {
+                return this.multiply(this).multiply(this);
+            }
+
+            magnitude() {
+                return Math.sqrt(this.real ** 2 + this.imag ** 2);
+            }
+        }
+        
+        const canvas = document.getElementById("fractal");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const maxIter = 30;
+        const zoom = 300;
+        const offsetX = canvas.width / 2;
+        const offsetY = canvas.height / 2;
+
+        function complexHalley(z) {
+            const epsilon = 1e-6;
+            let n = 0;
+            while (n < maxIter) {
+                 let fz = z.cube().subtract(new Complex(1, 0));
+                let dfz = new Complex(3, 0).multiply(z.square());
+                let ddfz = new Complex(6, 0).multiply(z);
+                let denom = new Complex(2, 0).multiply(dfz.square()).subtract(fz.multiply(ddfz));
+                if (denom.magnitude() < epsilon) break;
+                let dz = new Complex(2, 0).multiply(fz.multiply(dfz)).divide(denom);
+                z = z.subtract(dz);
+                if (dz.magnitude() < epsilon) break;
+                n++;
+            }
+            return n;
+        }
+
+        function drawFractal() {
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imgData.data;
+            
+            for (let x = 0; x < canvas.width; x++) {
+                for (let y = 0; y < canvas.height; y++) {
+                    let zx = (x - offsetX) / zoom;
+                    let zy = (y - offsetY) / zoom;
+                   let iter = complexHalley(new Complex(zx, zy));
+                    let color = iter * 10;
+                    let index = (x + y * canvas.width) * 4;
+                    data[index] = color % 256;
+                    data[index + 1] = (color * 2) % 256;
+                    data[index + 2] = (color * 3) % 256;
+                    data[index + 3] = 255;
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        drawFractal();
+    </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3-Fold Saddle Tower (Two Periods)</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Scene, Camera, Renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 2, 8);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Saddle Tower Function
+        function saddleTower(u, v, target) {
+            const U = (u - 0.5) * 6;  // Extend range for two periods
+            const V = (v - 0.5) * 6;  // Extend range for two periods
+            const theta = Math.atan2(V, U);  // Angle for 3-fold symmetry
+            const X = U;
+            const Y = V;
+            const Z = Math.log(Math.cosh(U)) - Math.log(Math.cosh(V)) + Math.cos(3 * theta); // 3-fold symmetry
+            target.set(X, Y, Z);
+        }
+
+        // Create Geometry
+        const geometry = new THREE.ParametricGeometry(saddleTower, 100, 100);
+        const material = new THREE.MeshStandardMaterial({
+            color: 0xff6600,
+            side: THREE.DoubleSide,
+            wireframe: false,
+            roughness: 0.4,
+            metalness: 0.6
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+
+        // Lighting
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(3, 3, 3);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040));
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            mesh.rotation.y += 0.005; // Rotate for better visualization
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle Window Resize
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+    </script>
+</body>
+</html>

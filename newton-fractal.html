@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newton Fractal</title>
+     <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    canvas {
+      display: block;
+      margin:1em;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      max-width:90%;
+    }
+  </style>
+</head>
+<body>
+    <canvas id="fractalCanvas" width="800" height="800"></canvas>
+    <script>
+        const canvas = document.getElementById("fractalCanvas");
+        const ctx = canvas.getContext("2d");
+        const width = canvas.width;
+        const height = canvas.height;
+        const maxIteration = 50;
+        
+        // Complex number operations
+        function complexAdd(a, b) { return { x: a.x + b.x, y: a.y + b.y }; }
+        function complexSub(a, b) { return { x: a.x - b.x, y: a.y - b.y }; }
+        function complexMul(a, b) {
+            return { x: a.x * b.x - a.y * b.y, y: a.x * b.y + a.y * b.x };
+        }
+        function complexDiv(a, b) {
+            const denom = b.x * b.x + b.y * b.y;
+            return { x: (a.x * b.x + a.y * b.y) / denom, y: (a.y * b.x - a.x * b.y) / denom };
+        }
+        function complexPow3(z) {
+            return complexMul(complexMul(z, z), z);
+        }
+        
+        function FunctionZ(z) {
+            return complexSub(complexPow3(z), { x: 1, y: 0 });
+        }
+        function DerivativeZ(z) {
+            return complexMul({ x: 3, y: 0 }, complexMul(z, z));
+        }
+        
+        const roots = [
+            { x: 1, y: 0 },
+            { x: -0.5, y: Math.sqrt(3) / 2 },
+            { x: -0.5, y: -Math.sqrt(3) / 2 }
+        ];
+        
+        const colors = ["red", "green", "blue"];
+        
+        function getRootColor(z) {
+            for (let i = 0; i < maxIteration; i++) {
+                let fz = FunctionZ(z);
+                let dfz = DerivativeZ(z);
+                z = complexSub(z, complexDiv(fz, dfz));
+                
+                for (let j = 0; j < roots.length; j++) {
+                    let diff = complexSub(z, roots[j]);
+                    if (Math.abs(diff.x) < 0.000001 && Math.abs(diff.y) < 0.000001) {
+                        return colors[j];
+                    }
+                }
+            }
+            return "black";
+        }
+        
+        function drawFractal() {
+            for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
+                    let zx = (x / width) * 3.5 - 2.5;
+                    let zy = (y / height) * 3 - 1.5;
+                    let color = getRootColor({ x: zx, y: zy });
+                    
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x, y, 1, 1);
+                }
+            }
+        }
+        
+        drawFractal();
+    </script>
+</body>
+</html>

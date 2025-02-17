@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trinoid Minimal Surface - Three.js</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body style="margin:0; overflow:hidden;">
+<script>
+    // 1️⃣ --- SCÈNE ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 2, 6);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // 2️⃣ --- TRINOID PARAMÉTRIQUE ---
+    function trinoidSurface(u, v, target) {
+        const k = 3; // Trinoid avec 3 ouvertures
+        const theta = 2 * Math.PI * v;  
+        const r = Math.exp((u - 0.5) * 4); // Contrôle la hauteur
+
+        const denom = k * r * (Math.pow(r, k) - 1);
+        const realPart = (-1 / denom) * ((k - 1) * Math.pow(r, k - 1) - k * Math.pow(r, k));
+        const imagPart = (1 / denom) * ((k - 1) * Math.pow(r, k - 1) + k * Math.pow(r, k));
+
+        const x = Math.cos(theta) * realPart;
+        const y = Math.sin(theta) * realPart;
+        const zCoord = 1 / (k - k * Math.pow(r, k));
+
+        target.set(x, y, zCoord);
+    }
+
+    // 3️⃣ --- GÉOMÉTRIE & MATÉRIAU ---
+    const resolution = 150;
+    const geometry = new THREE.ParametricGeometry(trinoidSurface, resolution, resolution);
+
+    const material = new THREE.MeshStandardMaterial({
+        color: 0xFF5733,
+        metalness: 0.5,
+        roughness: 0.4,
+        side: THREE.DoubleSide
+    });
+
+    const surface = new THREE.Mesh(geometry, material);
+    scene.add(surface);
+
+    // 4️⃣ --- LUMIÈRES ---
+    const light = new THREE.DirectionalLight(0xffffff, 1.5);
+    light.position.set(15,15, 15);
+    scene.add(light);
+
+    const ambientLight = new THREE.AmbientLight(0x404040);
+    scene.add(ambientLight);
+
+    // 6️⃣ --- ANIMATION ---
+    function animate() {
+        requestAnimationFrame(animate);
+        surface.rotation.y += 0.01;
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // 7️⃣ --- REDIMENSIONNEMENT ---
+    window.addEventListener("resize", () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    });
+</script>
+</body>
+</html>

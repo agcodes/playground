@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Henneberg Surface Visualization with Three.js</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
+
+    <script>
+        // Set up the scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Henneberg surface parametric equations
+        function hennebergSurface(u, v) {
+            const x = 2 * Math.cos(v) * Math.sinh(u) - (2 / 3) * Math.cos(3 * v) * Math.sinh(3 * u);
+            const y = 2 * Math.sin(v) * Math.sinh(u) + (2 / 3) * Math.sin(3 * v) * Math.sinh(3 * u);
+            const z = 2 * Math.cos(2 * v) * Math.cosh(2 * u);
+            return new THREE.Vector3(x, y, z);
+        }
+
+        // Generate points for the Henneberg surface
+        function generateHennebergSurface(gridSize = 100) {
+            let points = [];
+            let uMin = -2 * Math.PI; // Min value for u
+            let uMax = 2 * Math.PI; // Max value for u
+            let vMin = -Math.PI; // Min value for v
+            let vMax = Math.PI; // Max value for v
+
+            for (let u = uMin; u <= uMax; u += (uMax - uMin) / gridSize) {
+                for (let v = vMin; v <= vMax; v += (vMax - vMin) / gridSize) {
+                    const point = hennebergSurface(u, v);
+                    points.push(point);
+                }
+            }
+            return points;
+        }
+
+        // Generate points for the surface
+        const points = generateHennebergSurface(100);
+
+        // Create geometry from the points
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+        // Create a material for the points
+        const material = new THREE.PointsMaterial({ color: 0x00ff00, size: 0.1 });
+
+        // Create the points object
+        const pointsObject = new THREE.Points(geometry, material);
+        scene.add(pointsObject);
+
+        // Set up the camera position
+        camera.position.z = 50;
+
+
+        // Create an animate function to render the scene
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate the surface for better visualization
+            pointsObject.rotation.x += 0.01;
+            pointsObject.rotation.y += 0.01;
+
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Resize the renderer when the window is resized
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+    </script>
+</body>
+</html>

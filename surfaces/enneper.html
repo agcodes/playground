@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ennéper Surface - Three.js</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+<script>
+    // Initialisation de la scène
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 3, 6);
+    
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Lumière
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 5, 5);
+    scene.add(light);
+
+    scene.add(new THREE.AmbientLight(0x404040));
+
+    // Paramètres de la grille
+    const uMin = -2, uMax = 2;
+    const vMin = -2, vMax = 2;
+    const steps = 50; // Résolution de la surface
+
+    // Génération des points
+    const geometry = new THREE.BufferGeometry();
+    const vertices = [];
+    const indices = [];
+    const normals = [];
+
+    function enneperSurface(u, v) {
+        let x = u - (u ** 3) / 3 + u * (v ** 2);
+        let y = v - (v ** 3) / 3 + v * (u ** 2);
+        let z = u ** 2 - v ** 2;
+        return new THREE.Vector3(x, y, z);
+    }
+
+    // Création des sommets
+    for (let i = 0; i <= steps; i++) {
+        for (let j = 0; j <= steps; j++) {
+            let u = uMin + (uMax - uMin) * (i / steps);
+            let v = vMin + (vMax - vMin) * (j / steps);
+            let vertex = enneperSurface(u, v);
+            vertices.push(vertex.x, vertex.y, vertex.z);
+        }
+    }
+
+    // Création des indices pour les faces
+    for (let i = 0; i < steps; i++) {
+        for (let j = 0; j < steps; j++) {
+            let a = i * (steps + 1) + j;
+            let b = a + 1;
+            let c = a + (steps + 1);
+            let d = c + 1;
+            indices.push(a, b, c);
+            indices.push(b, d, c);
+        }
+    }
+
+    // Ajout des normales (approximées)
+    for (let i = 0; i < vertices.length; i += 3) {
+        let normal = new THREE.Vector3(vertices[i], vertices[i + 1], vertices[i + 2]).normalize();
+        normals.push(normal.x, normal.y, normal.z);
+    }
+
+    // Création de la géométrie
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+
+    // Matériau
+    const material = new THREE.MeshStandardMaterial({
+        color: 0x3498db,
+        metalness: 0.3,
+        roughness: 0.5,
+        side: THREE.DoubleSide,
+        wireframe: false
+    });
+
+    // Création du maillage
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    // Contrôles de la caméra
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+    // Animation
+    function animate() {
+        requestAnimationFrame(animate);
+        mesh.rotation.y += 0.01;
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Adaptation à la taille de l'écran
+    window.addEventListener("resize", () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    });
+
+</script>
+</body>
+</html>

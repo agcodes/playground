@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lidinoid Surface Visualization with Three.js</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
+
+    <script>
+        // Set up the scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Implicit equation for the Lidinoid surface
+        function lidinoidImplicit(x, y, z) {
+            const term1 = 0.5 * (
+                Math.sin(2 * x) * Math.cos(y) * Math.sin(z) +
+                Math.sin(2 * y) * Math.cos(z) * Math.sin(x) +
+                Math.sin(2 * z) * Math.cos(x) * Math.sin(y)
+            );
+
+            const term2 = 0.5 * (
+                Math.cos(2 * x) * Math.cos(2 * y) +
+                Math.cos(2 * y) * Math.cos(2 * z) +
+                Math.cos(2 * z) * Math.cos(2 * x)
+            );
+
+            return term1 - term2 + 0.15;
+        }
+
+        // Function to generate Lidinoid points using the implicit equation with random colors
+        function generateLidinoidPoints(gridSize = 50, threshold = 0.05) {
+            let points = [];
+            let colors = [];
+            for (let x = -Math.PI; x <= Math.PI; x += Math.PI / gridSize) {
+                for (let y = -Math.PI; y <= Math.PI; y += Math.PI / gridSize) {
+                    for (let z = -Math.PI; z <= Math.PI; z += Math.PI / gridSize) {
+                        if (Math.abs(lidinoidImplicit(x, y, z)) < threshold) {
+                            points.push(new THREE.Vector3(x, y, z));
+                            colors.push(new THREE.Color(Math.random(), Math.random(), Math.random())); // Random color for each point
+                        }
+                    }
+                }
+            }
+            return { points, colors };
+        }
+
+        // Generate points and colors for the Lidinoid surface
+        const { points, colors } = generateLidinoidPoints(50);
+
+        // Create geometry from the points
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+        // Set the colors to the geometry
+        geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors.flatMap(c => [c.r, c.g, c.b])), 3));
+
+        // Create a material for the points with vertex colors
+        const material = new THREE.PointsMaterial({ size: 0.1, vertexColors: THREE.VertexColors });
+
+        // Create the points object
+        const pointsObject = new THREE.Points(geometry, material);
+        scene.add(pointsObject);
+
+        // Set up the camera position
+        camera.position.z = 10;
+
+        // Create an animate function to render the scene
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate the surface for better visualization
+            pointsObject.rotation.x += 0.01;
+            pointsObject.rotation.y += 0.01;
+
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Resize the renderer when the window is resized
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+    </script>
+</body>
+</html>
