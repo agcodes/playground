@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cerisier en Fleurs</title>
+    <style>
+        body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    canvas {
+      display: block;
+      margin:1em;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      max-width:90%;
+    }
+    </style>
+</head>
+<body>
+    <canvas id="treeCanvas" width="600" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('treeCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function drawBranch(x, y, length, angle, depth, maxDepth) {
+            if (depth === 0) return;
+
+            const xEnd = x + length * Math.cos(angle);
+            const yEnd = y - length * Math.sin(angle);
+
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(xEnd, yEnd);
+            ctx.strokeStyle = 'saddlebrown';
+            ctx.lineWidth = Math.max(maxDepth - depth, 1);
+            ctx.stroke();
+
+            if (depth <= 2) {
+                // Draw flowers
+                ctx.beginPath();
+                ctx.arc(xEnd, yEnd, 5, 0, Math.PI * 2);
+                ctx.fillStyle = 'pink';
+                ctx.fill();
+            }
+
+            const newLength = length * 0.7;
+            const newAngle1 = angle + Math.PI / 6;
+            const newAngle2 = angle - Math.PI / 6;
+
+            drawBranch(xEnd, yEnd, newLength, newAngle1, depth - 1, maxDepth);
+            drawBranch(xEnd, yEnd, newLength, newAngle2, depth - 1, maxDepth);
+        }
+
+        function drawTree() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const trunkLength = canvas.height / 4;
+            const trunkAngle = Math.PI / 2;
+            const startX = canvas.width / 2;
+            const startY = canvas.height;
+            const depth = 10;
+
+            drawBranch(startX, startY, trunkLength, trunkAngle, depth, depth);
+        }
+
+        drawTree();
+    </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Cantor Set</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="cantorCanvas" width="800" height="200"></canvas>
+    <script>
+        /**
+         * Recursively draws the Cantor set on the canvas.
+         * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+         * @param {number} x - The x-coordinate to start drawing.
+         * @param {number} y - The y-coordinate to start drawing.
+         * @param {number} length - The length of the segment to draw.
+         * @param {number} depth - The current depth of recursion.
+         */
+        function drawCantorSet(ctx, x, y, length, depth) {
+            if (depth === 0) {
+                // Draw a rectangle to represent a segment of the Cantor set
+                ctx.fillRect(x, y, length, 10);
+            } else {
+                const newLength = length / 3;
+                // Recursively draw the left and right thirds
+                drawCantorSet(ctx, x, y, newLength, depth - 1);
+                drawCantorSet(ctx, x + 2 * newLength, y, newLength, depth - 1);
+            }
+        }
+
+        /**
+         * Animates the construction of the Cantor set.
+         * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+         * @param {number} maxDepth - The maximum depth of recursion.
+         * @param {number} currentDepth - The current depth of recursion.
+         */
+        function animateCantorSet(ctx, maxDepth, currentDepth = 0) {
+            const initialLength = canvas.width;
+            const initialY = canvas.height / 2 - 5; // Center vertically
+
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the Cantor set up to the current depth
+            drawCantorSet(ctx, 0, initialY, initialLength, currentDepth);
+
+            // If the current depth is less than the maximum depth, continue animating
+            if (currentDepth < maxDepth) {
+                setTimeout(() => {
+                    animateCantorSet(ctx, maxDepth, currentDepth + 1);
+                }, 500); // Delay between frames (in milliseconds)
+            }
+        }
+
+        // Initialize the canvas and context
+        const canvas = document.getElementById('cantorCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set the maximum number of iterations (depth)
+        const maxDepth = 5;
+
+        // Start the animation
+        animateCantorSet(ctx, maxDepth);
+    </script>
+</body>
+</html>

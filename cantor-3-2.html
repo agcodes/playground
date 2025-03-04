@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated 3D Cantor Set</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Set up the scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Set up the camera position
+        camera.position.z = 5;
+
+        /**
+         * Recursively creates the 3D Cantor set.
+         * @param {THREE.Group} group - The group to add cubes to.
+         * @param {number} size - The size of the cube.
+         * @param {number} depth - The current depth of recursion.
+         */
+        function createCantorSet(group, size, depth) {
+            if (depth === 0) {
+                const geometry = new THREE.BoxGeometry(size, size, size);
+                const material = new THREE.MeshBasicMaterial({ color: 0x0077ff, wireframe: true });
+                const cube = new THREE.Mesh(geometry, material);
+                group.add(cube);
+            } else {
+                const newSize = size / 3;
+                const offset = size / 3 + newSize / 2;
+
+                // Create 8 smaller cubes at the corners of the current cube
+                const positions = [
+                    [-offset, -offset, -offset],
+                    [-offset, -offset, offset],
+                    [-offset, offset, -offset],
+                    [-offset, offset, offset],
+                    [offset, -offset, -offset],
+                    [offset, -offset, offset],
+                    [offset, offset, -offset],
+                    [offset, offset, offset]
+                ];
+
+                positions.forEach((position) => {
+                    const subGroup = new THREE.Group();
+                    subGroup.position.set(...position);
+                    createCantorSet(subGroup, newSize, depth - 1);
+                    group.add(subGroup);
+                });
+            }
+        }
+
+        /**
+         * Animates the construction of the 3D Cantor set.
+         * @param {THREE.Group} group - The group to add cubes to.
+         * @param {number} size - The size of the initial cube.
+         * @param {number} maxDepth - The maximum depth of recursion.
+         * @param {number} currentDepth - The current depth of recursion.
+         */
+        function animateCantorSet(group, size, maxDepth, currentDepth = 0) {
+            // Clear the previous cubes
+            while (group.children.length > 0) {
+                group.remove(group.children[0]);
+            }
+
+            // Create the Cantor set up to the current depth
+            createCantorSet(group, size, currentDepth);
+
+            // If the current depth is less than the maximum depth, continue animating
+            if (currentDepth < maxDepth) {
+                setTimeout(() => {
+                    animateCantorSet(group, size, maxDepth, currentDepth + 1);
+                }, 1000); // Delay between frames (in milliseconds)
+            }
+        }
+
+        // Create the root group and start the Cantor set creation
+        const rootGroup = new THREE.Group();
+        const initialSize = 2;
+        const maxDepth = 3;
+        scene.add(rootGroup);
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            rootGroup.rotation.x += 0.01;
+            rootGroup.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        }
+
+        // Start the animation
+        animateCantorSet(rootGroup, initialSize, maxDepth);
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

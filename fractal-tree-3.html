@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Fractal Tree with Depth</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Set up the scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Set up the camera position
+        camera.position.z = 15;
+        camera.position.y = 5;
+
+        /**
+         * Recursively creates branches for the fractal tree.
+         * @param {THREE.Group} group - The group to add branches to.
+         * @param {number} length - The length of the branch.
+         * @param {number} thickness - The thickness of the branch.
+         * @param {number} depth - The current depth of recursion.
+         * @param {THREE.Vector3} direction - The direction vector of the branch.
+         */
+        function createBranch(group, length, thickness, depth, direction) {
+            const geometry = new THREE.CylinderGeometry(thickness, thickness, length, 8);
+            const material = new THREE.MeshBasicMaterial({ color: 0x339933 });
+            const branch = new THREE.Mesh(geometry, material);
+
+            // Calculate the orientation of the branch
+            branch.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+
+            // Position the branch correctly
+            branch.position.addVectors(branch.position, direction.clone().multiplyScalar(length / 2));
+            group.add(branch);
+
+            if (depth > 0) {
+                const newLength = length * getRandomInRange(0.6,0.8);
+                const newThickness = thickness * 0.7;
+
+                // Define new directions for child branches
+                const dir1 = new THREE.Vector3().copy(direction).applyAxisAngle(new THREE.Vector3(getRandomInRange(-0.2,0.2), getRandomInRange(-0.2,0.2), getRandomInRange(0.8,1.2)), Math.PI / 6);
+                const dir2 = new THREE.Vector3().copy(direction).applyAxisAngle(new THREE.Vector3(getRandomInRange(-0.2,0.2), getRandomInRange(0.5,1.5), getRandomInRange(-0.2,0.2)), -Math.PI / 6);
+                const dir3 = new THREE.Vector3().copy(direction).applyAxisAngle(new THREE.Vector3(getRandomInRange(0.8,1.2), getRandomInRange(-0.2,0.2), getRandomInRange(-0.2,0.2)), getRandomInRange(-Math.PI / 6,Math.PI / 6));
+
+                const branch1 = new THREE.Group();
+                const branch2 = new THREE.Group();
+                const branch3 = new THREE.Group();
+
+                // Position child branches at the end of the current branch
+                branch1.position.copy(branch.position).add(direction.clone().multiplyScalar(length / 2));
+                branch2.position.copy(branch.position).add(direction.clone().multiplyScalar(length / 2));
+                branch3.position.copy(branch.position).add(direction.clone().multiplyScalar(length / 2));
+
+                createBranch(branch1, newLength, newThickness, depth - 1, dir1);
+                createBranch(branch2, newLength, newThickness, depth - 1, dir2);
+                createBranch(branch3, newLength, newThickness, depth - 1, dir3);
+
+                group.add(branch1);
+                group.add(branch2);
+                group.add(branch3);
+            }
+        }
+
+        // Create the root group and start the fractal tree creation
+        const rootGroup = new THREE.Group();
+        const initialLength = 2;
+        const initialThickness = 0.1;
+        const maxDepth = 5;
+        const initialDirection = new THREE.Vector3(0, 1, 0);
+        createBranch(rootGroup, initialLength, initialThickness, maxDepth, initialDirection);
+        scene.add(rootGroup);
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            rootGroup.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        }
+        
+        function getRandomInRange(min, max) {
+          return Math.random() * (max - min) + min;
+        }
+
+        // Start the animation
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
