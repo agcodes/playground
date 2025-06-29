@@ -40,7 +40,7 @@
             ctx.moveTo(x, y);
             ctx.lineTo(xEnd, yEnd);
             ctx.strokeStyle = 'saddlebrown';
-            ctx.lineWidth = Math.max(maxDepth - depth, 1);
+            ctx.lineWidth = Math.max( depth, 1);
             ctx.stroke();
 
             if (depth <= 2) {
@@ -64,7 +64,7 @@
             const trunkLength = canvas.height / 4;
             const trunkAngle = Math.PI / 2;
             const startX = canvas.width / 2;
-            const startY = canvas.height;
+            const startY = canvas.height-40;
             const depth = 10;
 
             drawBranch(startX, startY, trunkLength, trunkAngle, depth, depth);

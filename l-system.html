@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isometric L-System with Grid</title>
+    <style>
+        body { text-align: center; }
+        canvas { background: #f4f4f4; border: 1px solid black; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = 800;
+        canvas.height = 600;
+
+        const gridSize = 20; // Grid spacing
+        const angle = 60; // Isometric angle
+        let iterations = 4;
+        let length = 10;
+
+        // ** L-System rules **
+        const axiom = "F-F+F-F+F-F+F+F+F"; 
+        const rules = { "F": "F+F-F-F+F-F" };
+
+        function generateLSystem(axiom, rules, iterations) {
+            let result = axiom;
+            for (let i = 0; i < iterations; i++) {
+                let next = "";
+                for (let char of result) {
+                    next += rules[char] || char;
+                }
+                result = next;
+            }
+            return result;
+        }
+
+        function toIsometric(x, y) {
+            const isoX = (x - y) * Math.cos(Math.PI / 6);
+            const isoY = (x + y) * Math.sin(Math.PI / 6);
+            return [isoX + canvas.width / 2, isoY + canvas.height / 3];
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = "#ddd";
+            ctx.lineWidth = 1;
+
+            const cols = Math.ceil(canvas.width / gridSize);
+            const rows = Math.ceil(canvas.height / gridSize);
+
+            ctx.beginPath();
+
+            // Draw isometric grid lines
+            for (let i = -cols; i < cols; i++) {
+                let [x1, y1] = toIsometric(i * gridSize, -rows * gridSize);
+                let [x2, y2] = toIsometric(i * gridSize, rows * gridSize);
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+            }
+            for (let i = -rows; i < rows; i++) {
+                let [x1, y1] = toIsometric(-cols * gridSize, i * gridSize);
+                let [x2, y2] = toIsometric(cols * gridSize, i * gridSize);
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+            }
+
+            ctx.stroke();
+        }
+
+        function drawLSystem(axiom) {
+            let x = 0, y = 0;
+            let stack = [];
+            let currentAngle = 0;
+
+            ctx.strokeStyle = "blue";
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            ctx.moveTo(...toIsometric(x, y));
+
+            for (let char of axiom) {
+                if (char === "F") {
+                    let newX = x + length * Math.cos(currentAngle * Math.PI / 180);
+                    let newY = y + length * Math.sin(currentAngle * Math.PI / 180);
+                    ctx.lineTo(...toIsometric(newX, newY));
+                    x = newX;
+                    y = newY;
+                } else if (char === "+") {
+                    currentAngle -= angle;
+                } else if (char === "-") {
+                    currentAngle += angle;
+                } else if (char === "[") {
+                    stack.push({ x, y, currentAngle });
+                } else if (char === "]") {
+                    let state = stack.pop();
+                    x = state.x;
+                    y = state.y;
+                    currentAngle = state.currentAngle;
+                    ctx.moveTo(...toIsometric(x, y));
+                }
+            }
+            ctx.stroke();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+            const lSystemResult = generateLSystem(axiom, rules, iterations);
+            drawLSystem(lSystemResult);
+        }
+
+        draw();
+    </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ensemble de Mandelbrot avec Inversion</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="mandelbrotCanvas" width="800" height="800"></canvas>
+    <script>
+        const canvas = document.getElementById('mandelbrotCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        function isInMandelbrotSet(x, y, maxIterations) {
+            let real = 0;
+            let imag = 0;
+            let iterations = 0;
+
+            while (iterations < maxIterations) {
+                const realTemp = real * real - imag * imag + x;
+                const imagTemp = 2 * real * imag + y;
+                real = realTemp;
+                imag = imagTemp;
+
+                if (real * real + imag * imag > 4) {
+                    return iterations;
+                }
+
+                iterations++;
+            }
+
+            return maxIterations;
+        }
+
+        function invertPoint(x, y) {
+            const denominator = x * x + y * y;
+            if (denominator === 0) {
+                return { x: 0, y: 0 };
+            }
+            return { x: x / denominator, y: y / denominator };
+        }
+
+        function drawMandelbrot() {
+            const maxIterations = 200;
+            const zoom = 100;
+
+            for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
+                    const zx = (x - width / 2) / zoom;
+                    const zy = (y - height / 2) / zoom;
+
+                    const iterations = isInMandelbrotSet(zx, zy, maxIterations);
+
+                    const invertedPoint = invertPoint(zx, zy);
+                    const invX = Math.floor((invertedPoint.x * zoom + width / 2));
+                    const invY = Math.floor((invertedPoint.y * zoom + height / 2));
+
+                    if (iterations < maxIterations) {
+                        const color = (iterations % 16) * 16;
+                        ctx.fillStyle = `hsl(${color}, 100%, 50%)`;
+                    } else {
+                        ctx.fillStyle = 'black';
+                    }
+
+                    ctx.fillRect(invX, invY, 1, 1);
+                }
+            }
+        }
+
+        drawMandelbrot();
+    </script>
+</body>
+</html>

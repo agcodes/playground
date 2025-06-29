@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandelbrot Area - Monte Carlo</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        canvas { border: 1px solid black; }
+        #info { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Mandelbrot Set Area Estimation (Monte Carlo)</h2>
+    <canvas id="mandelbrotCanvas" width="500" height="500"></canvas>
+    <div id="info">Points Tested: 0 | Points Inside: 0 | Estimated Area: 0</div>
+    <script>
+        const canvas = document.getElementById("mandelbrotCanvas");
+        const ctx = canvas.getContext("2d");
+        const info = document.getElementById("info");
+        
+        const width = canvas.width;
+        const height = canvas.height;
+        const xMin = -2, xMax = 1, yMin = -1.5, yMax = 1.5;
+        let totalPoints = 0, insidePoints = 0;
+        const maxIterations = 200;
+        const batchSize = 10000;
+        const totalSamples = 10000000;
+        
+        function mandelbrotCheck(cx, cy) {
+            let x = 0, y = 0, iteration = 0;
+            while (x*x + y*y <= 4 && iteration < maxIterations) {
+                let xTemp = x*x - y*y + cx;
+                y = 2*x*y + cy;
+                x = xTemp;
+                iteration++;
+            }
+            return iteration === maxIterations;
+        }
+        
+        function drawPoint(x, y, isInside) {
+            ctx.fillStyle = isInside ? "blue" : "red";
+            ctx.fillRect(x, y, 2, 2);
+        }
+        
+        function processBatch() {
+            for (let i = 0; i < batchSize; i++) {
+                if (totalPoints >= totalSamples) return;
+                
+                let randX = Math.random() * (xMax - xMin) + xMin;
+                let randY = Math.random() * (yMax - yMin) + yMin;
+                let pixelX = Math.floor((randX - xMin) / (xMax - xMin) * width);
+                let pixelY = Math.floor((randY - yMin) / (yMax - yMin) * height);
+                
+                let inside = mandelbrotCheck(randX, randY);
+                if (inside) insidePoints++;
+                totalPoints++;
+                drawPoint(pixelX, pixelY, inside);
+            }
+            
+            let areaEstimate = (insidePoints / totalPoints) * (xMax - xMin) * (yMax - yMin);
+            info.textContent = `Points Tested: ${totalPoints} | Points Inside: ${insidePoints} | Estimated Area: ${areaEstimate.toFixed(5)}`;
+            
+            if (totalPoints < totalSamples) {
+                requestAnimationFrame(processBatch);
+            }
+        }
+        
+        processBatch();
+    </script>
+</body>
+</html>

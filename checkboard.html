@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Échiquier inversé avec Canvas</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+      display: block;
+      margin: 20px auto;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="chessCanvas" width="2480" height="3508"></canvas>
+
+  <script>
+    // Fonction d'inversion géométrique par rapport au centre
+    function invert(x, y, C, R) {
+      // Conversion des coordonnées par rapport au centre
+      const x0 = x - C ;
+      const y0 = y - C;
+      // Application de la formule d'inversion
+      const f = R ** 2 / (x0 ** 2 + y0 ** 2 + 0.000000000001); // Ajout d'un petit epsilon pour éviter la division par zéro
+      const x1 = x0 * f;
+      const y1 = y0 * f;
+      // Retour des coordonnées inversées
+      return { x: x1, y: y1 };
+    }
+
+    const canvas = document.getElementById('chessCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const width = canvas.width;
+    const height = canvas.height;
+    const C = width / 2; // Centre du canvas
+    const R = width / 2; // Rayon du cercle d'inversion
+
+    // Récupérer les données de l'image
+    const imageData = ctx.createImageData(width, height);
+    const data = imageData.data;
+
+    // Parcours de chaque pixel
+    for (let x = 0; x < width; x++) {
+      for (let y = 0; y < height; y++) {
+        // Inversion du pixel
+        const { x: x1, y: y1 } = invert(x, y, C, R);
+
+        // Calcul de la case dans laquelle le pixel inversé se trouve
+        const cx = Math.floor(x1 / C);
+        const cy = Math.floor(y1 / C);
+
+        // Calcul de la couleur (noir ou blanc pour l'échiquier)
+        const color = ((cx + cy) % 2) * 255; // Noir ou blanc
+
+        // Calcul de l'indice dans le tableau des pixels (data)
+        const index = (y * width + x) * 4;
+        data[index] = color;     // R
+        data[index + 1] = color; // G
+        data[index + 2] = color; // B
+        data[index + 3] = 255;   // A (plein opacité)
+      }
+    }
+
+    // Dessiner l'image dans le canvas
+    ctx.putImageData(imageData, 0, 0);
+  </script>
+</body>
+</html>

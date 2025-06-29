@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brownian Grid - Dessin progressif</title>
+    <style>
+        body { text-align: center; background: black; color: white; font-family: Arial, sans-serif; }
+        canvas { display: block; margin: auto; border: 1px solid white; }
+    </style>
+</head>
+<body>
+
+    <h2>Brownian Grid - Dessin progressif</h2>
+    <canvas id="brownianCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById("brownianCanvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = 500;
+        canvas.height = 500;
+
+        const gridSize = 2; // Taille de la grille
+        const numParticles = 100; // Nombre de particules
+        const particles = [];
+
+        // Initialisation des particules au centre
+        for (let i = 0; i < numParticles; i++) {
+            particles.push({
+                x: Math.floor(canvas.width / gridSize / 2) * gridSize,
+                y: Math.floor(canvas.height / gridSize / 2) * gridSize,
+                color: `hsl(${Math.random() * 360}, 100%, 70%)` // Couleur aléatoire
+            });
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, gridSize, gridSize);
+            });
+        }
+
+        function updateParticles() {
+            particles.forEach(p => {
+                const direction = Math.floor(Math.random() * 4);
+                switch (direction) {
+                    case 0: p.x = Math.max(0, p.x - gridSize); break; // Gauche
+                    case 1: p.x = Math.min(canvas.width - gridSize, p.x + gridSize); break; // Droite
+                    case 2: p.y = Math.max(0, p.y - gridSize); break; // Haut
+                    case 3: p.y = Math.min(canvas.height - gridSize, p.y + gridSize); break; // Bas
+                }
+            });
+        }
+
+        function animate() {
+            updateParticles();
+            drawParticles();
+            requestAnimationFrame(animate);
+        }
+
+        // Lancement de l'animation
+        animate();
+    </script>
+
+</body>
+</html>

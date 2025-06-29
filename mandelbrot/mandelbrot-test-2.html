@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandelbrot Set Visualization</title>
+   <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    canvas {
+      display: block;
+      margin:1em;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      max-width:90%;
+    }
+    h1 {
+        text-align:center;
+    }
+  </style>
+</head>
+<body>
+    <canvas id="fractalCanvas" width="800" height="800"></canvas>
+
+    <script>
+        const canvas = document.getElementById('fractalCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Define fractal boundaries
+        const LeftBorder = -2;
+        const RightBorder = 1.5;
+        const LowerBorder = -1.5;
+        const UpperBorder = 2;
+        const maxIterations = 350;  // Maximum iterations
+        const R = 10;   // Escape radius threshold
+
+        // Map canvas coordinates to complex plane coordinates
+        function mapToRange(value, sourceMin, sourceMax, destMin, destMax) {
+            return destMin + ((value - sourceMin) * (destMax - destMin)) / (sourceMax - sourceMin);
+        }
+
+        // Invert point with respect to (0, 0)
+        function invertPoint(x, y, a, b) {
+            const translatedX = x - a;
+            const translatedY = y - b;
+
+            const denominator = translatedX * translatedX + translatedY * translatedY;
+            if (denominator === 0) {
+                return { x: x, y: y };
+            }
+
+            const inverseTranslatedX = translatedX / denominator;
+            const inverseTranslatedY = translatedY / denominator;
+
+            const inverseX = a + inverseTranslatedX;
+            const inverseY = b + inverseTranslatedY;
+
+            return { x: inverseX, y: inverseY };
+        }
+
+        // Color mapping function based on iteration count
+        function getColor(iteration) {
+            const t = iteration;
+           return 'rgb('+ t*4 + ', ' + t*4 +', '+t*4+')';  // Blue shades
+        }
+
+        // Draw the Mandelbrot set
+        function drawFractal() {
+            for (let px = 0; px < width; px++) {
+                for (let py = 0; py < height; py++) {
+                    const cx = mapToRange(px, 0, width, LeftBorder, RightBorder);
+                    const cy = mapToRange(py, 0, height, LowerBorder, UpperBorder);
+
+                    let L = 0.0;
+                    let x = 0.0;
+                    let y = 0.0;
+                    let escaped = false;
+                    let iteration = 0;
+
+                    for (let n = 0; n < maxIterations; n++) {
+                        const temp = x * x - y * y + cx;
+                        y = 2.0 * x * y + cy;
+                        x = temp;
+
+                        const magnitudeSquared = x * x + y * y;
+
+                        if (magnitudeSquared > 4) {
+                            escaped = true;
+                            iteration = n;
+                            break;
+                        }
+                    }
+
+                    // Invert the point (px, py) with respect to (0, 0)
+                    const invertedPoint = invertPoint(cx, cy,1,1);
+                   const zoomFactor = 0.5;
+                    const invX = Math.floor((invertedPoint.x) * width / 2 * zoomFactor);
+                    const invY = Math.floor((invertedPoint.y) * height / 2 * zoomFactor);
+
+                    ctx.fillStyle = getColor(iteration);
+                    ctx.fillRect(invX, invY, 1, 1);
+                }
+            }
+        }
+
+        // Start drawing
+        drawFractal();
+    </script>
+</body>
+</html>

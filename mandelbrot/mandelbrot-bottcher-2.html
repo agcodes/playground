@@ -17,9 +17,10 @@
     <script>
       const canvas = document.getElementById("mandelbrotCanvas");
       const ctx = canvas.getContext("2d");
-      ctx.fillStyle = "white"; // Définit la couleur de remplissage
-      ctx.fillRect(0, 0, 1900, 1000); // Dessine un rectangle plein
+      
 
+      var scale = 0;
+      
       // Set canvas dimensions
       const width = 175;
       const height = 200;
@@ -59,9 +60,10 @@
 
       // Draw Mandelbrot set using Böttcher coordinates
       function drawMandelbrot() {
-        const maxIterations = 500;
-        const scale = 4;
-
+        ctx.fillStyle = "white"; // Définit la couleur de remplissage
+        ctx.fillRect(0, 0, 1900, 1000); // Dessine un rectangle plein
+      
+        const maxIterations = 200; 
         for (let i = 0; i < width; i++) {
           for (let j = 0; j < height; j++) {
             const x = (i - width / 2) / (Math.min(width, height) / 2);
@@ -81,9 +83,17 @@
         }
       }
 
-      drawMandelbrot();
+    
+      
+        function animate() {
+            scale+=0.1;
+             drawMandelbrot();
+             requestAnimationFrame(animate);
+        }
 
-
+        // Start animation
+        animate();
+        
     </script>
 </body>
 </html>

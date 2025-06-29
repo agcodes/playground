@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chaos Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="chaosGame" width="800" height="800"></canvas>
+    <script>
+        const canvas = document.getElementById('chaosGame');
+        const ctx = canvas.getContext('2d');
+
+        const width = canvas.width;
+        const height = canvas.height;
+
+        const vertices = [
+            { x: width / 2, y: 0 },
+            { x: 0, y: height },
+            { x: width, y: height }
+        ];
+
+        let currentPoint = { x: Math.random() * width, y: Math.random() * height };
+
+        function drawPoint(point) {
+            ctx.fillRect(point.x, point.y, 1, 1);
+        }
+
+        function getRandomVertex() {
+            const randomIndex = Math.floor(Math.random() * vertices.length);
+            return vertices[randomIndex];
+        }
+
+        function nextPoint(current, vertex) {
+            const newX = (current.x + vertex.x) / 2;
+            const newY = (current.y + vertex.y) / 2;
+            return { x: newX, y: newY };
+        }
+
+        function chaosGame() {
+            for (let i = 0; i < 10000; i++) {
+                const vertex = getRandomVertex();
+                currentPoint = nextPoint(currentPoint, vertex);
+                drawPoint(currentPoint);
+            }
+        }
+
+        chaosGame();
+    </script>
+</body>
+</html>

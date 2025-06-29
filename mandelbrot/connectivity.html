@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Locale - Mandelbrot</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        canvas { border: 1px solid black; cursor: pointer; }
+        #info { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Visualisation de la Connexité Locale de l'Ensemble de Mandelbrot</h2>
+    <canvas id="mandelbrotCanvas" width="500" height="500"></canvas>
+    <div id="info">Cliquez pour zoomer et explorer la connexité locale.</div>
+    <script>
+        const canvas = document.getElementById("mandelbrotCanvas");
+        const ctx = canvas.getContext("2d");
+        let xMin = -2, xMax = 1, yMin = -1.5, yMax = 1.5;
+        const maxIterations = 100;
+
+        function mandelbrot(cReal, cImag) {
+            let zReal = 0, zImag = 0, iter = 0;
+            while (zReal * zReal + zImag * zImag <= 4 && iter < maxIterations) {
+                let temp = zReal * zReal - zImag * zImag + cReal;
+                zImag = 2 * zReal * zImag + cImag;
+                zReal = temp;
+                iter++;
+            }
+            return iter;
+        }
+
+        function drawMandelbrot() {
+            const width = canvas.width, height = canvas.height;
+            const imgData = ctx.getImageData(0, 0, width, height);
+            const pixels = imgData.data;
+            
+            for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
+                    let cReal = xMin + (x / width) * (xMax - xMin);
+                    let cImag = yMin + (y / height) * (yMax - yMin);
+                    let iter = mandelbrot(cReal, cImag);
+                    let color = iter === maxIterations ? 0 : 255 - Math.floor(iter * 255 / maxIterations);
+                    let index = (x + y * width) * 4;
+                    pixels[index] = color;
+                    pixels[index + 1] = color;
+                    pixels[index + 2] = color;
+                    pixels[index + 3] = 255;
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        function zoom(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const zoomFactor = 0.5;
+            let xCenter = xMin + (x / canvas.width) * (xMax - xMin);
+            let yCenter = yMin + (y / canvas.height) * (yMax - yMin);
+            let xRange = (xMax - xMin) * zoomFactor;
+            let yRange = (yMax - yMin) * zoomFactor;
+            xMin = xCenter - xRange / 2;
+            xMax = xCenter + xRange / 2;
+            yMin = yCenter - yRange / 2;
+            yMax = yCenter + yRange / 2;
+            drawMandelbrot();
+        }
+
+        canvas.addEventListener("click", zoom);
+        drawMandelbrot();
+    </script>
+</body>
+</html>

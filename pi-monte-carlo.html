@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estimation de Pi avec Monte Carlo en 3D</title>
+    <style>
+        body { margin: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+        canvas { display: block; width: 100%; height: 70%; }
+        .results { margin-top: 20px; font-family: Arial, sans-serif; }
+    </style>
+</head>
+<body>
+    <canvas id="piCanvas"></canvas>
+    <div class="results">
+        <p>Estimation de Pi: <span id="piEstimate"></span></p>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Initialisation de la scène, de la caméra et du rendu
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('piCanvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight *1);
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        // Création du cube avec un matériau transparent
+        const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
+        const cubeMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0x0077ff,
+            metalness: 0.7,
+            roughness: 0.2,
+            opacity: 0.5,
+            transparent: true
+        });
+        const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        scene.add(cube);
+
+        // Ajout des arêtes colorées
+        const edgesGeometry = new THREE.EdgesGeometry(cubeGeometry);
+        const edgesMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 });
+        const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+        scene.add(edges);
+
+        // Ajout d'une lumière pour mieux voir le matériau métallique
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 5, 5).normalize();
+        scene.add(light);
+
+        // Ajout d'une lumière ambiante pour mieux voir le cube
+        const ambientLight = new THREE.AmbientLight(0x404040, 2);
+        scene.add(ambientLight);
+
+        // Position de la caméra
+        camera.position.z = 3;
+
+        // Génération des points
+        const totalPoints = 10000000;
+        let pointsInsideSphere = 0;
+        const pointsGeometry = new THREE.BufferGeometry();
+        const pointsPositions = [];
+        const pointsColors = [];
+
+        for (let i = 0; i < totalPoints; i++) {
+            const x = Math.random() * 2 - 1;
+            const y = Math.random() * 2 - 1;
+            const z = Math.random() * 2 - 1;
+
+            if (x * x + y * y + z * z <= 1) {
+                pointsInsideSphere++;
+                pointsPositions.push(x, y, z);
+                pointsColors.push(1, 0, 0); // Rouge pour les points à l'intérieur
+            }
+        }
+
+        pointsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(pointsPositions, 3));
+        pointsGeometry.setAttribute('color', new THREE.Float32BufferAttribute(pointsColors, 3));
+
+        const pointsMaterial = new THREE.PointsMaterial({ vertexColors: true, size: 0.01 });
+        const points = new THREE.Points(pointsGeometry, pointsMaterial);
+        scene.add(points);
+
+        // Boucle d'animation
+        function animate() {
+            requestAnimationFrame(animate);
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+            edges.rotation.x += 0.01;
+            edges.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Estimation de Pi
+        const piEstimateValue = (pointsInsideSphere / totalPoints) * 6;
+
+        // Affichage des résultats
+        document.getElementById('piEstimate').innerText = piEstimateValue.toFixed(5);
+    </script>
+</body>
+</html>

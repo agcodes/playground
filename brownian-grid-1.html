@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brownian Grid Simulation with Trails</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="grid" width="500" height="500"></canvas>
+    <script>
+        const canvas = document.getElementById('grid');
+        const ctx = canvas.getContext('2d');
+        const gridSize = 10;
+        const particleRadius = 2;
+        const numParticles = 10;
+        let particles = [];
+
+        function init() {
+            particles = [];
+            for (let i = 0; i < numParticles; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    history: []
+                });
+            }
+            requestAnimationFrame(update);
+        }
+
+        function update() {
+            for (let i = 0; i < particles.length; i++) {
+                moveParticle(particles[i]);
+                drawParticle(particles[i]);
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function moveParticle(particle) {
+            const prevX = particle.x;
+            const prevY = particle.y;
+
+            particle.x += (Math.random() - 0.5) * gridSize;
+            particle.y += (Math.random() - 0.5) * gridSize;
+
+            // Ensure the particle stays within the canvas
+            if (particle.x < 0) particle.x = 0;
+            if (particle.y < 0) particle.y = 0;
+            if (particle.x > canvas.width) particle.x = canvas.width;
+            if (particle.y > canvas.height) particle.y = canvas.height;
+
+            // Store the previous position in history
+            particle.history.push({ x: prevX, y: prevY });
+
+            // Limit the history size to prevent excessive memory usage
+            if (particle.history.length > 100) {
+                particle.history.shift();
+            }
+        }
+
+        function drawParticle(particle) {
+            ctx.beginPath();
+            ctx.moveTo(particle.history[0].x, particle.history[0].y);
+            for (let i = 1; i < particle.history.length; i++) {
+                ctx.lineTo(particle.history[i].x, particle.history[i].y);
+            }
+            ctx.lineTo(particle.x, particle.y);
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+            ctx.stroke();
+
+            // Draw the current position of the particle
+            ctx.beginPath();
+            ctx.arc(particle.x, particle.y, particleRadius, 0, Math.PI * 2);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+        }
+
+        init();
+    </script>
+</body>
+</html>
